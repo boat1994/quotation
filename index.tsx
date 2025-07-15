@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 import { useState } from 'react';
-import ReactDOM from 'react-dom/client';
+import ReactDOM from 'react-dom-client';
 import jsPDF from 'jspdf';
 
 // Hardcoded sample prices per gram for materials
