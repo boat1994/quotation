@@ -1,37 +1,16 @@
 import jsPDF from 'jspdf';
-import { sarabunBase64 } from './font.js';
 import { formatCurrency } from './utils.js';
 
-const FONT_NAME = 'Sarabun-Regular';
-
-// Helper to initialize the PDF and add the Thai font
-const initializePdf = () => {
-    const doc = new jsPDF();
-    // Add the custom font to the virtual file system
-    doc.addFileToVFS('Sarabun-Regular.ttf', sarabunBase64);
-    // Add the font to jsPDF
-    doc.addFont('Sarabun-Regular.ttf', FONT_NAME, 'normal');
-    doc.addFont('Sarabun-Regular.ttf', FONT_NAME, 'bold');
-    doc.addFont('Sarabun-Regular.ttf', FONT_NAME, 'italic');
-    // Set the font for the entire document
-    doc.setFont(FONT_NAME, 'normal');
-    return doc;
-};
-
-
 const generatePdfHeader = (doc, title, customerName) => {
-  doc.setFont(FONT_NAME, 'bold');
   doc.setFontSize(20);
+  doc.setFont('helvetica', 'bold');
   doc.text(title, 105, 18, { align: 'center' });
-  
-  doc.setFont(FONT_NAME, 'normal');
   doc.setFontSize(11);
+  doc.setFont('helvetica', 'normal');
   doc.text('Your Jewelry Company', 20, 28);
-  doc.text(`Date: ${new Date().toLocaleDateString('en-CA')}`, 190, 28, { align: 'right' });
-  
+  doc.text(`Date: ${new Date().toLocaleDateString()}`, 190, 28, { align: 'right' });
   doc.setLineWidth(0.5);
   doc.line(20, 34, 190, 34);
-  
   let yPos = 42;
   if (customerName) {
       doc.text(`For: ${customerName}`, 20, 40);
@@ -44,8 +23,8 @@ const addImagesToPdf = (doc, images) => {
     if (!images || images.length === 0) return;
 
     doc.addPage();
-    doc.setFont(FONT_NAME, 'bold');
     doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
     doc.text('Reference Images', 105, 15, { align: 'center' });
 
     const margin = 20;
@@ -55,12 +34,8 @@ const addImagesToPdf = (doc, images) => {
     const gap = 8;
 
     const drawImage = (imgData, x, y, w, h) => {
-        try {
-            const imageType = imgData.split(';')[0].split('/')[1].toUpperCase();
-            doc.addImage(imgData, imageType, x, y, w, h);
-        } catch(e) {
-            console.error("Could not add image to PDF:", e);
-        }
+        const imageType = imgData.split(';')[0].split('/')[1].toUpperCase();
+        doc.addImage(imgData, imageType, x, y, w, h);
     };
 
     switch (images.length) {
@@ -118,26 +93,24 @@ const addImagesToPdf = (doc, images) => {
 };
 
 export const generateShopPdf = (summary, { material, grams }) => {
-    const doc = initializePdf();
+    const doc = new jsPDF();
     let yPos = generatePdfHeader(doc, 'Quotation (Shop)', summary.customerName);
 
-    doc.setFont(FONT_NAME, 'bold');
     doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
     doc.text('Project Cost Breakdown', 20, yPos);
     yPos += 8;
 
     const lineItem = (label, value, remarks = '') => {
-      doc.setFont(FONT_NAME, 'bold');
       doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
       doc.text(label, 20, yPos);
-      
-      doc.setFont(FONT_NAME, 'normal');
+      doc.setFont('helvetica', 'normal');
       doc.text(value, 190, yPos, { align: 'right' });
-      
       if (remarks) {
         yPos += 5;
-        doc.setFont(FONT_NAME, 'italic');
         doc.setFontSize(9);
+        doc.setFont('helvetica', 'italic');
         const splitRemarks = doc.splitTextToSize(remarks, 168);
         doc.text(splitRemarks, 22, yPos);
         yPos += (splitRemarks.length) * 3.5;
@@ -165,8 +138,8 @@ export const generateShopPdf = (summary, { material, grams }) => {
     doc.line(20, yPos, 190, yPos);
     yPos += 10;
 
-    doc.setFont(FONT_NAME, 'bold');
     doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
     doc.text('Total Estimated Cost:', 20, yPos);
     doc.text(formatCurrency(summary.totalPrice), 190, yPos, { align: 'right' });
 
@@ -175,20 +148,19 @@ export const generateShopPdf = (summary, { material, grams }) => {
 };
 
 export const generateCustomerPdf = (summary, { material, grams }) => {
-    const doc = initializePdf();
+    const doc = new jsPDF();
     let yPos = generatePdfHeader(doc, 'Project Quotation', summary.customerName);
-    
-    doc.setFont(FONT_NAME, 'bold');
+
     doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
     doc.text('Project Specifications', 20, yPos);
     yPos += 8;
 
     const specItem = (label, details) => {
-        doc.setFont(FONT_NAME, 'bold');
         doc.setFontSize(11);
+        doc.setFont('helvetica', 'bold');
         doc.text(label, 20, yPos);
-
-        doc.setFont(FONT_NAME, 'normal');
+        doc.setFont('helvetica', 'normal');
         const splitDetails = doc.splitTextToSize(details, 140);
         doc.text(splitDetails, 55, yPos);
         yPos += (splitDetails.length) * 5 + 3;
@@ -205,14 +177,14 @@ export const generateCustomerPdf = (summary, { material, grams }) => {
     doc.line(20, yPos, 190, yPos);
     yPos += 10;
 
-    doc.setFont(FONT_NAME, 'bold');
     doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
     doc.text('Total Estimated Price:', 20, yPos);
     doc.text(formatCurrency(summary.totalPrice), 190, yPos, { align: 'right' });
 
     yPos += 15;
-    doc.setFont(FONT_NAME, 'normal');
     doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
     doc.text('Notes:', 20, yPos);
     yPos += 4;
     doc.text('- Prices are estimates and subject to change based on final design and market fluctuations.', 22, yPos);

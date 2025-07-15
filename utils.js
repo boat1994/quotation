@@ -7,7 +7,7 @@ export const formatCurrency = (value) =>
   });
 
 export const getStoneRemarks = (stone) => {
-    const qty = parseInt(stone.quantity, 10);
+    const qty = typeof stone.quantity === 'string' ? parseInt(stone.quantity, 10) : stone.quantity;
     const qtyText = (qty > 1 && isFinite(qty)) ? ` x ${qty}` : '';
     if (stone.useDetails) {
         if (!stone.weight) return `Diamond details pending...${qtyText}`;
@@ -33,7 +33,7 @@ export const calculateCosts = ({
     const calculatedCadCost = parseFloat(cadCost) || 0;
     const calculatedMainStoneCost = parseFloat(mainStone.cost) || 0;
     const calculatedSideStonesCost = sideStones.reduce(
-        (total, stone) => total + ((parseFloat(stone.cost) || 0) * (parseInt(stone.quantity, 10) || 1)), 0
+        (total, stone) => total + ((parseFloat(stone.cost) || 0) * (parseInt(String(stone.quantity), 10) || 1)), 0
     );
     const calculatedLaborCost = parseFloat(laborCost) || 0;
 

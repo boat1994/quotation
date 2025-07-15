@@ -91,39 +91,41 @@ function App() {
   const [material, setMaterial] = useState('silver925');
   const [grams, setGrams] = useState('');
   const [showGramsInQuote, setShowGramsInQuote] = useState(true);
-  const [images, setImages] = useState([]);
+  const [images, setImages] = useState<string[]>([]);
   const [cadCost, setCadCost] = useState('');
   const [laborCost, setLaborCost] = useState('');
   const [margin, setMargin] = useState('20');
   const [summaryView, setSummaryView] = useState('shop');
 
-  const [mainStone, setMainStone] = useState(getInitialStoneState());
-  const [sideStones, setSideStones] = useState([]);
+  type Stone = ReturnType<typeof getInitialStoneState>;
 
-  const [summary, setSummary] = useState(null);
+  const [mainStone, setMainStone] = useState<Stone>(getInitialStoneState());
+  const [sideStones, setSideStones] = useState<Stone[]>([]);
+
+  const [summary, setSummary] = useState<ReturnType<typeof calculateCosts> | null>(null);
 
   const handleAddSideStone = () => {
-    setSideStones([...sideStones, { ...getInitialStoneState(), id: `side-${Date.now()}` }]);
+    setSideStones([...sideStones, { ...getInitialStoneState(), quantity: 1, id: `side-${Date.now()}` }]);
   };
 
-  const handleRemoveSideStone = (id) => {
+  const handleRemoveSideStone = (id: string) => {
     setSideStones(sideStones.filter(stone => stone.id !== id));
   };
 
-  const handleSideStoneChange = (id, updatedStone) => {
+  const handleSideStoneChange = (id: string, updatedStone: Stone) => {
     setSideStones(sideStones.map(stone => stone.id === id ? updatedStone : stone));
   };
   
-  const handleImageChange = (e) => {
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
         const files = Array.from(e.target.files).slice(0, 5); // Limit to 5
 
-        if (e.target.files.length > 5) {
+        if (Array.from(e.target.files).length > 5) {
           alert("You can only upload a maximum of 5 images.");
         }
 
         const imagePromises = files.map(file => {
-            return new Promise((resolve, reject) => {
+            return new Promise<string>((resolve, reject) => {
                 const reader = new FileReader();
                 reader.onloadend = () => {
                     if (typeof reader.result === 'string') {
@@ -143,7 +145,7 @@ function App() {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const summaryData = calculateCosts({
         customerName, material, grams, showGramsInQuote, images, cadCost, laborCost, margin, mainStone, sideStones
@@ -167,7 +169,7 @@ function App() {
         <span>{label}</span>
         {remarks && <span className="item-remarks" style={{whiteSpace: 'pre-wrap'}}>{remarks}</span>}
       </div>
-      <span>{value}</span>
+      <span>{formatCurrency(value)}</span>
     </div>
   );
   
@@ -303,11 +305,11 @@ function App() {
                 <>
                     <h2>Cost Breakdown</h2>
                     <div className="summary-details">
-                        <SummaryItem label="Material Cost (+15%)" value={formatCurrency(summary.materialCost)} remarks={`${material.replace(/([a-z])([A-Z0-9])/g, '$1 $2').replace(/^./, str => str.toUpperCase())} (${grams || 0}g)`}/>
-                        <SummaryItem label="CAD Cost" value={formatCurrency(summary.cadCost)} />
-                        <SummaryItem label="Main Stone Cost" value={formatCurrency(summary.mainStoneCost)} remarks={summary.mainStoneRemarks}/>
-                        <SummaryItem label="Side Stones Cost" value={formatCurrency(summary.sideStonesCost)} remarks={summary.sideStonesRemarks}/>
-                        <SummaryItem label="Labor Cost" value={formatCurrency(summary.laborCost)} />
+                        <SummaryItem label="Material Cost (+15%)" value={summary.materialCost} remarks={`${material.replace(/([a-z])([A-Z0-9])/g, '$1 $2').replace(/^./, str => str.toUpperCase())} (${grams || 0}g)`}/>
+                        <SummaryItem label="CAD Cost" value={summary.cadCost} />
+                        <SummaryItem label="Main Stone Cost" value={summary.mainStoneCost} remarks={summary.mainStoneRemarks}/>
+                        <SummaryItem label="Side Stones Cost" value={summary.sideStonesCost} remarks={summary.sideStonesRemarks}/>
+                        <SummaryItem label="Labor Cost" value={summary.laborCost} />
                     </div>
                     <div className="summary-item summary-subtotal">
                       <span>Subtotal</span>

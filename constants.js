@@ -29,6 +29,6 @@ export const getInitialStoneState = () => ({
   cut: 'EX',
   clarity: 'EX',
   manualRemarks: '',
-  quantity: '1',
+  quantity: 1,
   id: `main-${Date.now()}`,
 });
