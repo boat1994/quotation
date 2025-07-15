@@ -1,5 +1,6 @@
 {
   "name": "Copy of Jewelry Pricing Calculator",
   "description": "A tool to calculate the estimated cost of a jewelry project based on materials, stones, and labor.",
-  "requestFramePermissions": []
+  "requestFramePermissions": [],
+  "prompt": ""
 }
