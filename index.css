@@ -411,8 +411,8 @@ button:active {
 
 .modal-close {
     position: absolute;
-    top: 0.75rem;
-    right: 0.75rem;
+    top: 1rem;
+    right: 1rem;
     background: transparent;
     color: var(--text-color);
     border: none;
