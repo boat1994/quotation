@@ -9,7 +9,7 @@ export const translations = {
     customerNameLabel: 'Customer Name',
     jewelryTypeLabel: 'Jewelry Type',
     materialLabel: 'Material',
-    showGramsLabel: 'Show grams in customer quotation',
+    gramsVisibilityLabel: 'Grams in Customer Quotation',
     refImagesLabel: 'Reference Images (up to 5)',
     cadCostLabel: 'CAD Cost',
     mainStoneLabel: 'Main Stone',
@@ -39,6 +39,10 @@ export const translations = {
     downloadFactoryPDF: 'For Factory',
     backBtn: '← Back',
     backBtnLabel: 'Back to calculator',
+
+    // Radio Buttons
+    showGramsRadio: 'Show weight',
+    hideGramsRadio: 'Hide weight',
     
     // Summary
     shopView: 'For Shop',
@@ -78,12 +82,29 @@ export const translations = {
     pdfTotalEstCostLabel: 'Total Estimated Cost:',
     pdfTotalEstPriceLabel: 'Estimated Price:',
     pdfRemarksLabel: 'Remarks:',
-    pdfNotesLabel: 'Notes:',
-    pdfNote1: '- Price is an initial estimate and may change based on final design and market fluctuations.',
-    pdfNote2: '- This quotation is valid for 30 days.',
     shopPdfFilename: 'Quotation_Shop.pdf',
     customerPdfFilename: 'Quotation_Customer.pdf',
     factoryPdfFilename: 'WorkOrder.pdf',
+    
+    pdfTermsTitle: 'Terms and Conditions',
+    pdfPriceValidityTitle: 'Price Validity',
+    pdfPriceValidityText: 'This quotation is valid for 7 days from the date of issue.',
+    pdfPaymentTermsTitle: 'Payment Terms',
+    pdfPaymentTerm1: 'A 50% deposit of the total amount is required to confirm the production order.',
+    pdfPaymentTerm2: 'The remaining 50% must be paid before delivery.',
+    pdfPaymentMethodTitle: 'Payment Method',
+    pdfPaymentMethodText: 'Account Name: Bogus Jewelry\nBank: K-Bank\nAccount No: 123-4-56789-0',
+    pdfLeadTimeTitle: 'Production Lead Time',
+    pdfLeadTimeText: 'Approximately 14-21 business days after receiving the deposit and design confirmation.',
+    pdfDeliveryTitle: 'Delivery Terms',
+    pdfDeliveryTerm1: 'Free nationwide delivery via Thailand Post or Grab with in Bangkok areaa with full value insurance.',
+    pdfDeliveryTerm2: 'Customers will receive the product within 1-3 business days after shipment.',
+    pdfWarrantyTitle: 'Warranty',
+    pdfWarrantyTerm1: '1-year warranty covering manufacturing defects.',
+    pdfWarrantyTerm2: 'Does not cover damage from misuse or accidents.',
+    pdfWarrantyTerm3: 'Free cleaning and re-plating service once within the first year.',
+    pdfCancellationTitle: 'Cancellation/Return Policy',
+    pdfCancellationText: 'As this is a made-to-order item, it cannot be canceled, changed, or returned after production has been confirmed.',
 
 
     // Units
@@ -136,7 +157,7 @@ export const translations = {
     customerNameLabel: 'ชื่อลูกค้า',
     jewelryTypeLabel: 'ประเภทเครื่องประดับ',
     materialLabel: 'วัสดุ',
-    showGramsLabel: 'แสดงน้ำหนัก (กรัม) ในใบเสนอราคาลูกค้า',
+    gramsVisibilityLabel: 'น้ำหนักในใบเสนอราคา',
     refImagesLabel: 'รูปภาพอ้างอิง (สูงสุด 5 รูป)',
     cadCostLabel: 'ค่าออกแบบ CAD',
     mainStoneLabel: 'เพชรยอด',
@@ -166,6 +187,10 @@ export const translations = {
     downloadFactoryPDF: 'สำหรับโรงงาน',
     backBtn: '← กลับ',
     backBtnLabel: 'กลับไปที่เครื่องคำนวณ',
+
+    // Radio Buttons
+    showGramsRadio: 'แสดงน้ำหนัก',
+    hideGramsRadio: 'ซ่อนน้ำหนัก',
     
     // Summary
     shopView: 'สำหรับร้านค้า',
@@ -205,12 +230,29 @@ export const translations = {
     pdfTotalEstCostLabel: 'ต้นทุนโดยประมาณ:',
     pdfTotalEstPriceLabel: 'ราคาประเมิน:',
     pdfRemarksLabel: 'หมายเหตุ:',
-    pdfNotesLabel: 'หมายเหตุ:',
-    pdfNote1: '- ราคาเป็นการประเมินเบื้องต้นและอาจมีการเปลี่ยนแปลงตามการออกแบบสุดท้ายและความผันผวนของตลาด',
-    pdfNote2: '- ใบเสนอนี้มีอายุ 30 วัน',
     shopPdfFilename: 'ใบเสนอราคา_ร้านค้า.pdf',
     customerPdfFilename: 'ใบเสนอราคา_ลูกค้า.pdf',
     factoryPdfFilename: 'ใบสั่งผลิต.pdf',
+    
+    pdfTermsTitle: 'เงื่อนไขและข้อตกลง',
+    pdfPriceValidityTitle: 'การยืนราคา',
+    pdfPriceValidityText: 'ใบเสนอราคานี้มีอายุ 7 วัน นับจากวันที่ออกเอกสาร',
+    pdfPaymentTermsTitle: 'เงื่อนไขการชำระเงิน',
+    pdfPaymentTerm1: 'ชำระเงินมัดจำ 50% ของยอดรวมสุทธิ เพื่อยืนยันการสั่งผลิต',
+    pdfPaymentTerm2: 'ชำระส่วนที่เหลืออีก 50% ก่อนการจัดส่งสินค้า',
+    pdfPaymentMethodTitle: 'ช่องทางการชำระเงิน',
+    pdfPaymentMethodText: 'ชื่อบัญชี: Bogus Jewelry\nธนาคาร: กสิกรไทย\nเลขที่บัญชี: 123-4-56789-0',
+    pdfLeadTimeTitle: 'ระยะเวลาการผลิต',
+    pdfLeadTimeText: 'ใช้ระยะเวลาในการผลิตประมาณ 14-21 วันทำการ หลังจากได้รับเงินมัดจำและยืนยันแบบการผลิตแล้ว',
+    pdfDeliveryTitle: 'การจัดส่งสินค้า',
+    pdfDeliveryTerm1: 'บริการจัดส่งฟรีทั่วประเทศ ผ่าน Thailand post หรือ Grab ในพื้นที่กรุงเทพมหานคร พร้อมประกันการขนส่งเต็มมูลค่า',
+    pdfDeliveryTerm2: 'ลูกค้าจะได้รับสินค้าภายใน 1-3 วันทำการหลังจากการจัดส่ง',
+    pdfWarrantyTitle: 'การรับประกันสินค้า',
+    pdfWarrantyTerm1: 'รับประกันความเสียหายที่เกิดจากกระบวนการผลิตเป็นระยะเวลา 1 ปี',
+    pdfWarrantyTerm2: 'ไม่ครอบคลุมความเสียหายที่เกิดจากการใช้งานผิดประเภทหรืออุบัติเหตุ',
+    pdfWarrantyTerm3: 'บริการล้างทำความสะอาดและชุบใหม่ฟรี 1 ครั้งภายใน 1 ปีแรก',
+    pdfCancellationTitle: 'นโยบายการยกเลิก/คืนสินค้า',
+    pdfCancellationText: 'เนื่องจากเป็นสินค้าสั่งทำพิเศษ (Made-to-Order) จึงไม่สามารถยกเลิก, เปลี่ยนแปลง, หรือคืนสินค้าได้ หลังจากยืนยันการผลิตแล้ว',
 
     // Units
     gramsUnit: 'ก',

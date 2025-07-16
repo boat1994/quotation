@@ -1,3 +1,4 @@
+
 import jsPDF from 'jspdf';
 import { formatCurrency } from './utils.js';
 import { sarabunBase64 } from './font.js';
@@ -49,6 +50,63 @@ const addRemarksToPdf = (doc, remarks, yPos, lang) => {
     const splitRemarks = doc.splitTextToSize(remarks, 170);
     doc.text(splitRemarks, 20, yPos);
     yPos += (splitRemarks.length) * 5;
+    return yPos;
+};
+
+const addTermsAndConditions = (doc, lang, startY) => {
+    let yPos = startY;
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const bottomMargin = 20;
+
+    const checkPageBreak = (spaceNeeded) => {
+        if (yPos + spaceNeeded > pageHeight - bottomMargin) {
+            doc.addPage();
+            doc.setFont('Sarabun'); // Reset font on new page
+            yPos = 20;
+        }
+    };
+    
+    checkPageBreak(25);
+    yPos += 15;
+    doc.setLineWidth(0.2);
+    doc.line(20, yPos, 190, yPos);
+    yPos += 10;
+
+    doc.setFontSize(12);
+    doc.text(t(lang, 'pdfTermsTitle'), 20, yPos);
+    yPos += 7;
+
+    const addTermSection = (titleKey, textKeys) => {
+        const titleText = t(lang, titleKey);
+        checkPageBreak(20); // estimate space needed for a section
+        
+        doc.setFontSize(10);
+        doc.text(titleText, 22, yPos);
+        doc.setLineWidth(0.1);
+        doc.line(22, yPos + 1, 22 + doc.getTextWidth(titleText), yPos + 1); // Underline
+        yPos += 5;
+        
+        doc.setFontSize(9);
+
+        const keys = Array.isArray(textKeys) ? textKeys : [textKeys];
+        keys.forEach(key => {
+            const text = t(lang, key);
+            const splitText = doc.splitTextToSize(text, 166); // slightly narrower for indent
+            checkPageBreak(splitText.length * 4);
+            doc.text(splitText, 25, yPos, { charSpace: -0.05 });
+            yPos += splitText.length * 4;
+        });
+        yPos += 4; // space between sections
+    };
+
+    addTermSection('pdfPriceValidityTitle', 'pdfPriceValidityText');
+    addTermSection('pdfPaymentTermsTitle', ['pdfPaymentTerm1', 'pdfPaymentTerm2']);
+    addTermSection('pdfPaymentMethodTitle', 'pdfPaymentMethodText');
+    addTermSection('pdfLeadTimeTitle', 'pdfLeadTimeText');
+    addTermSection('pdfDeliveryTitle', ['pdfDeliveryTerm1', 'pdfDeliveryTerm2']);
+    addTermSection('pdfWarrantyTitle', ['pdfWarrantyTerm1', 'pdfWarrantyTerm2', 'pdfWarrantyTerm3']);
+    addTermSection('pdfCancellationTitle', 'pdfCancellationText');
+
     return yPos;
 };
 
@@ -179,16 +237,7 @@ export const generateCustomerPdf = (summary, lang) => {
 
     yPos = addRemarksToPdf(doc, summary.remarksForCustomer, yPos, lang);
 
-    yPos += 15;
-    doc.setFontSize(9);
-    doc.text(`${t(lang, 'pdfNotesLabel')}`, 20, yPos);
-    yPos += 4;
-    const note1 = doc.splitTextToSize(t(lang, 'pdfNote1'), 168);
-    doc.text(note1, 22, yPos);
-    yPos += (note1.length) * 3.5;
-    yPos += 4;
-    const note2 = doc.splitTextToSize(t(lang, 'pdfNote2'), 168);
-    doc.text(note2, 22, yPos);
+    yPos = addTermsAndConditions(doc, lang, yPos);
     
     addImagesToPdf(doc, summary.images, lang);
     doc.save(t(lang, 'customerPdfFilename'));

@@ -1,4 +1,3 @@
-
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -445,9 +444,18 @@ function App() {
               step={0.01}
             />
           </div>
-          <div className="checkbox-group">
-              <input type="checkbox" id="showGrams" checked={showGramsInQuote} onChange={(e) => setShowGramsInQuote(e.target.checked)} />
-              <label htmlFor="showGrams">{t(language, 'showGramsLabel')}</label>
+          <div className="radio-container">
+            <label className="radio-group-label">{t(language, 'gramsVisibilityLabel')}</label>
+            <div className="radio-options-wrapper">
+                <div className="radio-option">
+                    <input type="radio" id="showGrams" name="gramsVisibility" checked={showGramsInQuote} onChange={() => setShowGramsInQuote(true)} />
+                    <label htmlFor="showGrams">{t(language, 'showGramsRadio')}</label>
+                </div>
+                <div className="radio-option">
+                    <input type="radio" id="hideGrams" name="gramsVisibility" checked={!showGramsInQuote} onChange={() => setShowGramsInQuote(false)} />
+                    <label htmlFor="hideGrams">{t(language, 'hideGramsRadio')}</label>
+                </div>
+            </div>
           </div>
         </div>
 
