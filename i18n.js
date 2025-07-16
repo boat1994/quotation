@@ -1,8 +1,6 @@
-
 export const translations = {
   en: {
     // App
-    appTitle: 'Bogus order form',
     language: 'Language',
     
     // Form Labels
@@ -143,7 +141,6 @@ export const translations = {
   },
   th: {
     // App
-    appTitle: 'สร้างออเดอร์จิวเวลรี่',
     language: 'ภาษา',
     
     // Form Labels

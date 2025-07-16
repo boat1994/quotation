@@ -400,7 +400,9 @@ function App() {
         <span>|</span>
         <a href="#" onClick={(e) => { e.preventDefault(); setLanguage('th'); }} className={language === 'th' ? 'active' : ''}>ไทย</a>
       </div>
-      <h1>{t(language, 'appTitle')}</h1>
+      <div className="logo-container">
+        <img src="./bogus_logo.png" alt="Jewelry Calculator Logo" className="logo" />
+      </div>
       <form onSubmit={handleSubmit} aria-labelledby="form-heading">
         <div className="form-group">
           <label htmlFor="customerName">{t(language, 'customerNameLabel')}</label>

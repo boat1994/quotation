@@ -1,0 +1,17 @@
+{
+  "name": "Jewelry Pricing Calculator",
+  "short_name": "JewelryCalc",
+  "description": "A tool to calculate the estimated cost of a jewelry project based on materials, stones, and labor.",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#1e1e1e",
+  "theme_color": "#1e1e1e",
+  "icons": [
+    {
+      "src": "bogus_logo.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

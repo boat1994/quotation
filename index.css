@@ -82,14 +82,16 @@ body {
 }
 
 
-/* Heading */
-h1 {
+/* Logo */
+.logo-container {
   text-align: center;
-  color: var(--primary-color);
-  margin-top: 0;
   margin-bottom: 2rem;
-  font-size: 2.25em;
-  font-weight: 600;
+}
+
+.logo {
+  max-width: 250px;
+  width: 100%;
+  height: auto;
 }
 
 /* Form styling */
