@@ -41,71 +41,6 @@ const SpecItem = ({label, value}) => (
     </div>
 );
 
-const PasswordModal = ({ isOpen, onClose, onSuccess, language }) => {
-    const [passwordInput, setPasswordInput] = useState('');
-    const [passwordError, setPasswordError] = useState('');
-
-    useEffect(() => {
-        if (isOpen) {
-            setPasswordInput('');
-            setPasswordError('');
-        }
-    }, [isOpen]);
-
-    const handlePasswordSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        // Initial password '151515' encoded in base64 is 'MTUxNTE1'
-        if (typeof btoa === 'function' && btoa(passwordInput) === 'MTUxNTE1') {
-            setPasswordError('');
-            onSuccess();
-        } else {
-            setPasswordError(t(language, 'incorrectPasswordError'));
-        }
-    };
-
-    useLayoutEffect(() => {
-        if (isOpen) {
-            const handleKeyDown = (event: KeyboardEvent) => {
-                if (event.key === 'Escape') {
-                    onClose();
-                }
-            };
-            window.addEventListener('keydown', handleKeyDown);
-            return () => {
-                window.removeEventListener('keydown', handleKeyDown);
-            };
-        }
-    }, [isOpen, onClose]);
-
-    if (!isOpen) return null;
-
-    return (
-        <div className="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="password-heading" onClick={onClose}>
-            <div className="modal-content password-modal-content" onClick={e => e.stopPropagation()}>
-                <div className="password-prompt">
-                    <h2 id="password-heading">{t(language, 'passwordPromptTitle')}</h2>
-                    <form onSubmit={handlePasswordSubmit} className="password-form" noValidate>
-                        <div className="form-group">
-                            <label htmlFor="shopPassword">{t(language, 'passwordLabel')}</label>
-                            <input
-                                type="password"
-                                id="shopPassword"
-                                value={passwordInput}
-                                onChange={(e) => setPasswordInput(e.target.value)}
-                                autoFocus
-                                aria-describedby={passwordError ? "password-error-msg" : undefined}
-                            />
-                            {passwordError && <p id="password-error-msg" className="password-error" role="alert">{passwordError}</p>}
-                        </div>
-                        <button type="submit" className="unlock-btn">{t(language, 'unlockBtn')}</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    );
-};
-
-
 const SummaryModal = ({
     isOpen,
     onClose,
@@ -118,9 +53,9 @@ const SummaryModal = ({
     setRemarksForFactoryShop,
     remarksForCustomer,
     setRemarksForCustomer,
-    handleRequestShopPDF,
+    handleDownloadShopPDF,
     handleDownloadCustomerPDF,
-    handleRequestFactoryPDF,
+    handleDownloadFactoryPDF,
     language,
 }) => {
     // Scroll locking effect
@@ -145,13 +80,12 @@ const SummaryModal = ({
         }
     }, [isOpen, onClose]);
     
-    // Reset view when modal opens
+    // Reset view when summary changes (modal opens with new data)
     useEffect(() => {
-        if (summary && isOpen) {
+        if (summary) {
             setSummaryView('shop');
         }
-    }, [summary, isOpen, setSummaryView]);
-
+    }, [summary, setSummaryView]);
 
     if (!isOpen || !summary) {
         return null;
@@ -247,9 +181,9 @@ const SummaryModal = ({
                     </div>
 
                     <div className="download-grid">
-                        <button type="button" className="download-btn shop" onClick={handleRequestShopPDF}>{t(language, 'downloadShopPDF')}</button>
+                        <button type="button" className="download-btn shop" onClick={handleDownloadShopPDF}>{t(language, 'downloadShopPDF')}</button>
                         <button type="button" className="download-btn customer" onClick={handleDownloadCustomerPDF}>{t(language, 'downloadCustomerPDF')}</button>
-                        <button type="button" className="download-btn factory" onClick={handleRequestFactoryPDF}>{t(language, 'downloadFactoryPDF')}</button>
+                        <button type="button" className="download-btn factory" onClick={handleDownloadFactoryPDF}>{t(language, 'downloadFactoryPDF')}</button>
                     </div>
                 </div>
             </div>
@@ -359,9 +293,7 @@ function App() {
   const [margin, setMargin] = useState('20');
   const [summaryView, setSummaryView] = useState('shop');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
-  const [pdfTypeToDownload, setPdfTypeToDownload] = useState<'shop' | null>(null);
-  const [lastPasswordSuccessTime, setLastPasswordSuccessTime] = useState<number | null>(null);
+
 
   type Stone = ReturnType<typeof getInitialStoneState>;
 
@@ -461,29 +393,6 @@ function App() {
         remarksForFactoryShop,
     };
     generateFactoryPdf(updatedSummary, language);
-  };
-  
-  const handleRequestShopPDF = () => {
-      const TEN_MINUTES = 10 * 60 * 1000;
-      if (lastPasswordSuccessTime && (Date.now() - lastPasswordSuccessTime < TEN_MINUTES)) {
-          handleDownloadShopPDF();
-          return;
-      }
-      setPdfTypeToDownload('shop');
-      setIsPasswordModalOpen(true);
-  };
-  
-  const handleRequestFactoryPDF = () => {
-      handleDownloadFactoryPDF();
-  };
-
-  const handlePasswordSuccess = () => {
-      setLastPasswordSuccessTime(Date.now());
-      if (pdfTypeToDownload === 'shop') {
-          handleDownloadShopPDF();
-      }
-      setIsPasswordModalOpen(false);
-      setPdfTypeToDownload(null);
   };
 
   const handleFinalPriceChange = (newPriceStr: string) => {
@@ -662,16 +571,9 @@ function App() {
           setRemarksForFactoryShop={setRemarksForFactoryShop}
           remarksForCustomer={remarksForCustomer}
           setRemarksForCustomer={setRemarksForCustomer}
-          handleRequestShopPDF={handleRequestShopPDF}
+          handleDownloadShopPDF={handleDownloadShopPDF}
           handleDownloadCustomerPDF={handleDownloadCustomerPDF}
-          handleRequestFactoryPDF={handleRequestFactoryPDF}
-          language={language}
-      />
-
-      <PasswordModal
-          isOpen={isPasswordModalOpen}
-          onClose={() => setIsPasswordModalOpen(false)}
-          onSuccess={handlePasswordSuccess}
+          handleDownloadFactoryPDF={handleDownloadFactoryPDF}
           language={language}
       />
     </main>

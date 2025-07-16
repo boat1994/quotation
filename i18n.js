@@ -37,7 +37,6 @@ export const translations = {
     downloadFactoryPDF: 'For Factory',
     backBtn: '← Back',
     backBtnLabel: 'Back to calculator',
-    unlockBtn: 'Unlock',
 
     // Radio Buttons
     showGramsRadio: 'Show weight',
@@ -56,11 +55,6 @@ export const translations = {
     totalCustomerLabel: 'Total Estimated Price:',
     remarksForFactoryShopLabel: 'Remarks for Factory and Shop',
     remarksForCustomerLabel: 'Remarks for Customer',
-
-    // Password
-    passwordPromptTitle: 'Password Required',
-    passwordLabel: 'Enter Password',
-    incorrectPasswordError: 'Incorrect password. Please try again.',
 
     // PDF
     shopPdfTitle: 'Quotation (For Shop)',
@@ -183,7 +177,6 @@ export const translations = {
     downloadFactoryPDF: 'สำหรับโรงงาน',
     backBtn: '← กลับ',
     backBtnLabel: 'กลับไปที่เครื่องคำนวณ',
-    unlockBtn: 'ปลดล็อค',
 
     // Radio Buttons
     showGramsRadio: 'แสดงน้ำหนัก',
@@ -202,11 +195,6 @@ export const translations = {
     totalCustomerLabel: 'ราคาประเมิน:',
     remarksForFactoryShopLabel: 'หมายเหตุสำหรับโรงงานและร้านค้า',
     remarksForCustomerLabel: 'หมายเหตุสำหรับลูกค้า',
-    
-    // Password
-    passwordPromptTitle: 'ต้องการรหัสผ่าน',
-    passwordLabel: 'กรอกรหัสผ่าน',
-    incorrectPasswordError: 'รหัสผ่านไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง',
     
     // PDF
     shopPdfTitle: 'ใบเสนอราคา (สำหรับร้านค้า)',
