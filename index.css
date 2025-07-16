@@ -390,6 +390,7 @@ button:active {
     background: var(--summary-bg);
     padding: 2.5rem;
     margin-top: 3rem;
+    margin-bottom: 3rem;
     border-radius: 16px;
     border: 1px solid var(--summary-border);
     box-shadow: 0 8px 32px var(--shadow-color);
