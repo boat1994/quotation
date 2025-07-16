@@ -226,7 +226,7 @@ export const translations = {
     
     pdfTermsTitle: 'เงื่อนไขและข้อตกลง',
     pdfPriceValidityTitle: 'การยืนราคา',
-    pdfPriceValidityText: 'ใบเสนอราคานี้มีอายุ 7 วัน นับจากวันที่ออกเอกสาร',
+    pdfPriceValidityText: 'ใบเสนอราคานีมีอายุ 7 วัน นับจากวันที่ออกเอกสาร',
     pdfPaymentTermsTitle: 'เงื่อนไขการชำระเงิน',
     pdfPaymentTerm1: 'ชำระเงินมัดจำ 50% ของยอดรวมสุทธิ เพื่อยืนยันการสั่งผลิต',
     pdfPaymentTerm2: 'ชำระส่วนที่เหลืออีก 50% ก่อนการจัดส่งสินค้า',
