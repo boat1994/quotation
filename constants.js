@@ -6,19 +6,14 @@ export const materialPrices = {
   pt950: 1790,
 };
 
-export const diamondShapes = {
-  round: 'Round Cut',
-  princess: 'Princess Cut',
-  emerald: 'Emerald Cut',
-  oval: 'Oval Cut',
-  marquise: 'Marquise Cut',
-  pear: 'Pear Cut',
-  cushion: 'Cushion Cut',
-};
+export const materialKeys = ['silver925', 'gold9k', 'gold14k', 'gold18k', 'pt950'];
+
+export const diamondShapeKeys = ['round', 'princess', 'emerald', 'oval', 'marquise', 'pear', 'cushion'];
 
 export const diamondColors = ['D', 'E', 'F', 'G', 'H', 'I', 'J'];
-export const diamondCuts = { EX: 'Excellent', VG: 'Very Good' };
-export const diamondClarities = { EX: 'Excellent', VG: 'Very Good' };
+
+export const diamondDetailKeys = ['EX', 'VG'];
+
 
 export const getInitialStoneState = () => ({
   cost: '',
@@ -28,6 +23,7 @@ export const getInitialStoneState = () => ({
   color: 'D',
   cut: 'EX',
   clarity: 'EX',
+  polish: 'EX',
   manualRemarks: '',
   quantity: 1,
   id: `main-${Date.now()}`,

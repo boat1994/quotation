@@ -1,116 +1,76 @@
 import jsPDF from 'jspdf';
 import { formatCurrency } from './utils.js';
+import { sarabunBase64 } from './font.js';
+import { t } from './i18n.js';
 
-const generatePdfHeader = (doc, title, customerName) => {
-  doc.setFontSize(20);
-  doc.setFont('helvetica', 'bold');
-  doc.text(title, 105, 18, { align: 'center' });
-  doc.setFontSize(11);
-  doc.setFont('helvetica', 'normal');
-  doc.text('Your Jewelry Company', 20, 28);
-  doc.text(`Date: ${new Date().toLocaleDateString()}`, 190, 28, { align: 'right' });
-  doc.setLineWidth(0.5);
-  doc.line(20, 34, 190, 34);
-  let yPos = 42;
-  if (customerName) {
-      doc.text(`For: ${customerName}`, 20, 40);
-      yPos = 48;
-  }
-  return yPos;
-};
 
-const addImagesToPdf = (doc, images) => {
+const addImagesToPdf = (doc, images, lang) => {
     if (!images || images.length === 0) return;
 
     doc.addPage();
+    doc.setFont('Sarabun'); // Ensure font is set for new page
     doc.setFontSize(16);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Reference Images', 105, 15, { align: 'center' });
+    doc.text(t(lang, 'pdfRefImagesTitle'), 105, 15, { align: 'center' });
 
     const margin = 20;
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const usableWidth = pageWidth - margin * 2;
-    const startY = 25;
-    const gap = 8;
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const usableWidth = doc.internal.pageSize.getWidth() - margin * 2;
+    const imageGap = 10;
+    let yPos = 25;
 
-    const drawImage = (imgData, x, y, w, h) => {
-        const imageType = imgData.split(';')[0].split('/')[1].toUpperCase();
-        doc.addImage(imgData, imageType, x, y, w, h);
-    };
+    images.forEach((image) => {
+        const aspectRatio = image.height / image.width;
+        const renderedHeight = usableWidth * aspectRatio;
 
-    switch (images.length) {
-        case 1: {
-            const imgWidth = usableWidth * 0.7;
-            const x = (pageWidth - imgWidth) / 2;
-            drawImage(images[0], x, startY, imgWidth, imgWidth);
-            break;
+        if (yPos + renderedHeight > pageHeight - margin) {
+            doc.addPage();
+            doc.setFont('Sarabun'); // Ensure font is set for new page
+            doc.setFontSize(16);
+            doc.text(t(lang, 'pdfRefImagesTitleCont'), 105, 15, { align: 'center' });
+            yPos = 25;
         }
-        case 2: {
-            const imgWidth = (usableWidth - gap) / 2;
-            images.forEach((img, i) => {
-                const x = margin + i * (imgWidth + gap);
-                drawImage(img, x, startY, imgWidth, imgWidth);
-            });
-            break;
-        }
-        case 3: {
-            const imgWidth = (usableWidth - gap * 2) / 3;
-            images.forEach((img, i) => {
-                const x = margin + i * (imgWidth + gap);
-                drawImage(img, x, startY, imgWidth, imgWidth);
-            });
-            break;
-        }
-        case 4: { // 2x2 grid
-            const imgWidth = (usableWidth - gap) / 2;
-            images.forEach((img, i) => {
-                const row = Math.floor(i / 2);
-                const col = i % 2;
-                const x = margin + col * (imgWidth + gap);
-                const y = startY + row * (imgWidth + gap);
-                drawImage(img, x, y, imgWidth, imgWidth);
-            });
-            break;
-        }
-        case 5: { // 2 on top, 3 on bottom
-            const vGap = 10;
-            // Top row (2 images)
-            const topImgWidth = (usableWidth - gap) / 2;
-            images.slice(0, 2).forEach((img, i) => {
-                const x = margin + i * (topImgWidth + gap);
-                drawImage(img, x, startY, topImgWidth, topImgWidth);
-            });
-            // Bottom row (3 images)
-            const yBot = startY + topImgWidth + vGap;
-            const botImgWidth = (usableWidth - gap * 2) / 3;
-            images.slice(2).forEach((img, i) => {
-                const x = margin + i * (botImgWidth + gap);
-                drawImage(img, x, yBot, botImgWidth, botImgWidth);
-            });
-            break;
-        }
-    }
+        
+        const imageType = image.src.split(';')[0].split('/')[1].toUpperCase();
+        doc.addImage(image.src, imageType, margin, yPos, usableWidth, renderedHeight);
+        yPos += renderedHeight + imageGap;
+    });
 };
 
-export const generateShopPdf = (summary, { material, grams }) => {
+export const generateShopPdf = (summary, { material, grams }, lang) => {
     const doc = new jsPDF();
-    let yPos = generatePdfHeader(doc, 'Quotation (Shop)', summary.customerName);
+    doc.addFileToVFS('Sarabun-Regular.ttf', sarabunBase64);
+    doc.addFont('Sarabun-Regular.ttf', 'Sarabun', 'normal');
+    doc.setFont('Sarabun');
+
+    const dateLocale = lang === 'th' ? 'th-TH' : 'en-US';
+    const dateString = new Date().toLocaleDateString(dateLocale, { year: 'numeric', month: 'long', day: 'numeric' });
+
+    // Header
+    doc.setFontSize(20);
+    doc.text(t(lang, 'shopPdfTitle'), 105, 18, { align: 'center' });
+    doc.setFontSize(11);
+    doc.text('Bogus', 20, 28);
+    doc.text(`${t(lang, 'pdfDateLabel')}${dateString}`, 190, 28, { align: 'right' });
+    doc.setLineWidth(0.5);
+    doc.line(20, 34, 190, 34);
+    
+    let yPos = 42;
+    if (summary.customerName) {
+        doc.text(`${t(lang, 'pdfForLabel')}${summary.customerName}`, 20, 40);
+        yPos = 48;
+    }
 
     doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Project Cost Breakdown', 20, yPos);
+    doc.text(t(lang, 'pdfProjectCostTitle'), 20, yPos);
     yPos += 8;
 
     const lineItem = (label, value, remarks = '') => {
       doc.setFontSize(11);
-      doc.setFont('helvetica', 'bold');
       doc.text(label, 20, yPos);
-      doc.setFont('helvetica', 'normal');
       doc.text(value, 190, yPos, { align: 'right' });
       if (remarks) {
         yPos += 5;
         doc.setFontSize(9);
-        doc.setFont('helvetica', 'italic');
         const splitRemarks = doc.splitTextToSize(remarks, 168);
         doc.text(splitRemarks, 22, yPos);
         yPos += (splitRemarks.length) * 3.5;
@@ -118,20 +78,21 @@ export const generateShopPdf = (summary, { material, grams }) => {
       yPos += 8;
     };
     
-    const materialLabel = `${material.replace(/([a-z])([A-Z0-9])/g, '$1 $2').replace(/^./, str => str.toUpperCase())} (${grams || 0}g)`;
-    lineItem('Material Cost (+15%)', formatCurrency(summary.materialCost), materialLabel);
-    lineItem('CAD Cost', formatCurrency(summary.cadCost));
-    lineItem('Main Stone Cost', formatCurrency(summary.mainStoneCost), summary.mainStoneRemarks);
-    lineItem('Side Stones Cost', formatCurrency(summary.sideStonesCost), summary.sideStonesRemarks);
-    lineItem('Labor Cost', formatCurrency(summary.laborCost));
+    const materialLabel = `${t(lang, material)} (${grams || 0}${t(lang, 'gramsUnit')})`;
+    lineItem(t(lang, 'pdfMaterialCostPdfLabel'), formatCurrency(summary.materialCost, lang), materialLabel);
+    lineItem(t(lang, 'pdfCadCostLabel'), formatCurrency(summary.cadCost, lang));
+    lineItem(t(lang, 'pdfMainStoneCostLabel'), formatCurrency(summary.mainStoneCost, lang), summary.mainStoneRemarks);
+    lineItem(t(lang, 'pdfSideStonesCostLabel'), formatCurrency(summary.sideStonesCost, lang), summary.sideStonesRemarks);
+    lineItem(t(lang, 'pdfLaborCostLabel'), formatCurrency(summary.laborCost, lang));
     
     yPos += 1;
     doc.setLineWidth(0.2);
     doc.line(20, yPos, 190, yPos);
     yPos += 6;
 
-    lineItem('Subtotal', formatCurrency(summary.subtotal));
-    lineItem(`Margin (${summary.marginPercentage}%)`, formatCurrency(summary.marginAmount));
+    lineItem(t(lang, 'pdfSubtotalLabel'), formatCurrency(summary.subtotal, lang));
+    const marginText = t(lang, 'pdfMarginLabel', { marginPercentage: summary.marginPercentage });
+    lineItem(marginText, formatCurrency(summary.marginAmount, lang));
     
     yPos += 4;
     doc.setLineWidth(0.2);
@@ -139,38 +100,54 @@ export const generateShopPdf = (summary, { material, grams }) => {
     yPos += 10;
 
     doc.setFontSize(16);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Total Estimated Cost:', 20, yPos);
-    doc.text(formatCurrency(summary.totalPrice), 190, yPos, { align: 'right' });
+    doc.text(`${t(lang, 'pdfTotalEstCostLabel')}`, 20, yPos);
+    doc.text(formatCurrency(summary.totalPrice, lang), 190, yPos, { align: 'right' });
 
-    addImagesToPdf(doc, summary.images);
-    doc.save('Shop_Quotation.pdf');
+    addImagesToPdf(doc, summary.images, lang);
+    doc.save(t(lang, 'shopPdfFilename'));
 };
 
-export const generateCustomerPdf = (summary, { material, grams }) => {
+export const generateCustomerPdf = (summary, { material, grams }, lang) => {
     const doc = new jsPDF();
-    let yPos = generatePdfHeader(doc, 'Project Quotation', summary.customerName);
+    doc.addFileToVFS('Sarabun-Regular.ttf', sarabunBase64);
+    doc.addFont('Sarabun-Regular.ttf', 'Sarabun', 'normal');
+    doc.setFont('Sarabun');
+
+    const dateLocale = lang === 'th' ? 'th-TH' : 'en-US';
+    const dateString = new Date().toLocaleDateString(dateLocale, { year: 'numeric', month: 'long', day: 'numeric' });
+
+    // Header
+    doc.setFontSize(20);
+    doc.text(t(lang, 'customerPdfTitle'), 105, 18, { align: 'center' });
+    doc.setFontSize(11);
+    doc.text('Bogus', 20, 28);
+    doc.text(`${t(lang, 'pdfDateLabel')}${dateString}`, 190, 28, { align: 'right' });
+    doc.setLineWidth(0.5);
+    doc.line(20, 34, 190, 34);
+
+    let yPos = 42;
+    if (summary.customerName) {
+        doc.text(`${t(lang, 'pdfForLabel')}${summary.customerName}`, 20, 40);
+        yPos = 48;
+    }
 
     doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Project Specifications', 20, yPos);
+    doc.text(t(lang, 'pdfProjectDetailsTitle'), 20, yPos);
     yPos += 8;
 
     const specItem = (label, details) => {
         doc.setFontSize(11);
-        doc.setFont('helvetica', 'bold');
         doc.text(label, 20, yPos);
-        doc.setFont('helvetica', 'normal');
         const splitDetails = doc.splitTextToSize(details, 140);
         doc.text(splitDetails, 55, yPos);
         yPos += (splitDetails.length) * 5 + 3;
     };
     
-    const materialGrams = summary.showGramsInQuote ? ` (${grams || 0}g)` : '';
-    const materialLabel = `${material.replace(/([a-z])([A-Z0-9])/g, '$1 $2').replace(/^./, str => str.toUpperCase())}${materialGrams}`;
-    specItem('Material:', materialLabel);
-    if(summary.mainStoneRemarks) specItem('Main Stone:', summary.mainStoneRemarks);
-    if(summary.sideStonesRemarks) specItem('Side Stones:', summary.sideStonesRemarks.replace(/\n/g, ', '));
+    const materialGrams = summary.showGramsInQuote ? ` (${grams || 0}${t(lang, 'gramsUnit')})` : '';
+    const materialLabel = `${t(lang, material)}${materialGrams}`;
+    specItem(t(lang, 'pdfMaterialLabel'), materialLabel);
+    if(summary.mainStoneRemarks) specItem(t(lang, 'pdfMainStoneLabel'), summary.mainStoneRemarks);
+    if(summary.sideStonesRemarks) specItem(t(lang, 'pdfSideStoneLabel'), summary.sideStonesRemarks.replace(/\n/g, ', '));
 
     yPos += 10;
     doc.setLineWidth(0.5);
@@ -178,19 +155,20 @@ export const generateCustomerPdf = (summary, { material, grams }) => {
     yPos += 10;
 
     doc.setFontSize(16);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Total Estimated Price:', 20, yPos);
-    doc.text(formatCurrency(summary.totalPrice), 190, yPos, { align: 'right' });
+    doc.text(`${t(lang, 'pdfTotalEstPriceLabel')}`, 20, yPos);
+    doc.text(formatCurrency(summary.totalPrice, lang), 190, yPos, { align: 'right' });
 
     yPos += 15;
     doc.setFontSize(9);
-    doc.setFont('helvetica', 'normal');
-    doc.text('Notes:', 20, yPos);
+    doc.text(`${t(lang, 'pdfNotesLabel')}`, 20, yPos);
     yPos += 4;
-    doc.text('- Prices are estimates and subject to change based on final design and market fluctuations.', 22, yPos);
+    const note1 = doc.splitTextToSize(t(lang, 'pdfNote1'), 168);
+    doc.text(note1, 22, yPos);
+    yPos += (note1.length) * 3.5;
     yPos += 4;
-    doc.text('- This quotation is valid for 30 days.', 22, yPos);
+    const note2 = doc.splitTextToSize(t(lang, 'pdfNote2'), 168);
+    doc.text(note2, 22, yPos);
     
-    addImagesToPdf(doc, summary.images);
-    doc.save('Customer_Quotation.pdf');
+    addImagesToPdf(doc, summary.images, lang);
+    doc.save(t(lang, 'customerPdfFilename'));
 };

@@ -1,17 +1,28 @@
-import { materialPrices, diamondShapes } from './constants.js';
+import { materialPrices } from './constants.js';
+import { t } from './i18n.js';
 
-export const formatCurrency = (value) =>
-  (value || 0).toLocaleString('en-US', {
+export const formatCurrency = (value, lang = 'en') =>
+  (value || 0).toLocaleString(lang === 'th' ? 'th-TH' : 'en-US', {
     style: 'currency',
     currency: 'THB',
   });
 
-export const getStoneRemarks = (stone) => {
+export const getStoneRemarks = (stone, lang = 'en') => {
     const qty = typeof stone.quantity === 'string' ? parseInt(stone.quantity, 10) : stone.quantity;
     const qtyText = (qty > 1 && isFinite(qty)) ? ` x ${qty}` : '';
     if (stone.useDetails) {
-        if (!stone.weight) return `Diamond details pending...${qtyText}`;
-        return `${diamondShapes[stone.shape]}, ${stone.weight || '0'}ct, Color: ${stone.color}, Cut: ${stone.cut}, Clarity: ${stone.clarity}${qtyText}`;
+        if (!stone.weight) return `${t(lang, 'waitingForDetails')}${qtyText}`;
+        
+        const parts = [
+            t(lang, stone.shape),
+            `${stone.weight || '0'} ${t(lang, 'carat')}`,
+            `${t(lang, 'color')}: ${stone.color}`,
+            `${t(lang, 'cut')}: ${t(lang, stone.cut)}`,
+            `${t(lang, 'clarity')}: ${t(lang, stone.clarity)}`,
+            `${t(lang, 'polish')}: ${t(lang, stone.polish)}`
+        ];
+        
+        return `${parts.join(', ')}${qtyText}`;
     }
     return stone.manualRemarks ? `${stone.manualRemarks}${qtyText}` : '';
 };
@@ -27,6 +38,7 @@ export const calculateCosts = ({
   sideStones,
   laborCost,
   margin,
+  language
 }) => {
     const materialBasePrice = materialPrices[material] || 0;
     const calculatedMaterialCost = (parseFloat(grams) || 0) * materialBasePrice * 1.15;
@@ -57,9 +69,9 @@ export const calculateCosts = ({
       materialCost: calculatedMaterialCost,
       cadCost: calculatedCadCost,
       mainStoneCost: calculatedMainStoneCost,
-      mainStoneRemarks: getStoneRemarks(mainStone),
+      mainStoneRemarks: getStoneRemarks(mainStone, language),
       sideStonesCost: calculatedSideStonesCost,
-      sideStonesRemarks: sideStones.map(getStoneRemarks).filter(Boolean).join('\n'),
+      sideStonesRemarks: sideStones.map(stone => getStoneRemarks(stone, language)).filter(Boolean).join('\n'),
       laborCost: calculatedLaborCost,
       subtotal,
       marginPercentage,

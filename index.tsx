@@ -5,16 +5,23 @@
 import React, { useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import {
-  diamondShapes,
+  materialKeys,
+  diamondShapeKeys,
   diamondColors,
-  diamondCuts,
-  diamondClarities,
+  diamondDetailKeys,
   getInitialStoneState,
 } from './constants.js';
 import { formatCurrency, calculateCosts } from './utils.js';
 import { generateShopPdf, generateCustomerPdf } from './pdf.js';
+import { t } from './i18n.js';
 
-const StoneInputGroup = ({ label, stone, onStoneChange, idPrefix, isSideStone = false, onRemove = null }) => {
+interface ImageState {
+  src: string;
+  width: number;
+  height: number;
+}
+
+const StoneInputGroup = ({ label, stone, onStoneChange, idPrefix, isSideStone = false, onRemove = null, lang }) => {
   const handleInputChange = (field, value) => {
     onStoneChange({ ...stone, [field]: value });
   };
@@ -25,19 +32,17 @@ const StoneInputGroup = ({ label, stone, onStoneChange, idPrefix, isSideStone = 
 
   return (
     <div className="form-group stone-group">
-      <div className="stone-group-header">
-        <label htmlFor={`${idPrefix}Cost`}>{label}</label>
-        {isSideStone && onRemove && (
-          <button type="button" onClick={onRemove} className="remove-stone-btn" aria-label={`Remove ${label}`}>&times;</button>
-        )}
-      </div>
+      <label htmlFor={`${idPrefix}Cost`}>{label}</label>
+      {isSideStone && onRemove && (
+        <button type="button" onClick={onRemove} className="remove-stone-btn" aria-label={`Remove ${label}`}>&times;</button>
+      )}
       <div className={`grid-group ${isSideStone ? 'side-stone' : ''}`}>
         <input
           id={`${idPrefix}Cost`}
           type="number"
           value={stone.cost}
           onChange={(e) => handleInputChange('cost', e.target.value)}
-          placeholder="Cost Per Stone"
+          placeholder={t(lang, 'costPerStonePlaceholder')}
           aria-label={`${label} cost`}
           step="0.01"
         />
@@ -46,31 +51,34 @@ const StoneInputGroup = ({ label, stone, onStoneChange, idPrefix, isSideStone = 
             type="number"
             value={stone.quantity}
             onChange={(e) => handleInputChange('quantity', e.target.value)}
-            placeholder="Qty"
+            placeholder={t(lang, 'qtyPlaceholder')}
             aria-label={`${label} quantity`}
             step="1"
             min="1"
           />
         )}
         <button type="button" className="toggle-details-btn" onClick={toggleDetails}>
-          {stone.useDetails ? 'Enter Remarks Manually' : 'Add Diamond Details'}
+          {stone.useDetails ? t(lang, 'toggleDetailsManual') : t(lang, 'toggleDetailsDiamond')}
         </button>
       </div>
 
       {stone.useDetails ? (
         <div className="details-grid">
           <select value={stone.shape} onChange={(e) => handleInputChange('shape', e.target.value)} aria-label={`${label} Shape`}>
-             {Object.entries(diamondShapes).map(([key, value]) => <option key={key} value={key}>{value}</option>)}
+             {diamondShapeKeys.map(key => <option key={key} value={key}>{t(lang, key)}</option>)}
           </select>
-          <input type="number" value={stone.weight} onChange={(e) => handleInputChange('weight', e.target.value)} placeholder="Weight (ct)" step="0.01" aria-label={`${label} Weight`}/>
+          <input type="number" value={stone.weight} onChange={(e) => handleInputChange('weight', e.target.value)} placeholder={t(lang, 'weightPlaceholder')} step="0.01" aria-label={`${label} Weight`}/>
           <select value={stone.color} onChange={(e) => handleInputChange('color', e.target.value)} aria-label={`${label} Color`}>
              {diamondColors.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
           <select value={stone.cut} onChange={(e) => handleInputChange('cut', e.target.value)} aria-label={`${label} Cut`}>
-             {Object.entries(diamondCuts).map(([key, value]) => <option key={key} value={key}>{value}</option>)}
+             {diamondDetailKeys.map(key => <option key={key} value={key}>{t(lang, key)}</option>)}
           </select>
           <select value={stone.clarity} onChange={(e) => handleInputChange('clarity', e.target.value)} aria-label={`${label} Clarity`}>
-             {Object.entries(diamondClarities).map(([key, value]) => <option key={key} value={key}>{value}</option>)}
+             {diamondDetailKeys.map(key => <option key={key} value={key}>{t(lang, key)}</option>)}
+          </select>
+          <select value={stone.polish} onChange={(e) => handleInputChange('polish', e.target.value)} aria-label={`${label} Polish`}>
+             {diamondDetailKeys.map(key => <option key={key} value={key}>{t(lang, key)}</option>)}
           </select>
         </div>
       ) : (
@@ -78,7 +86,7 @@ const StoneInputGroup = ({ label, stone, onStoneChange, idPrefix, isSideStone = 
           type="text"
           value={stone.manualRemarks}
           onChange={(e) => handleInputChange('manualRemarks', e.target.value)}
-          placeholder="Remarks (e.g., Blue Sapphire, 2ct)"
+          placeholder={t(lang, 'remarksPlaceholder')}
           aria-label={`${label} remarks`}
         />
       )}
@@ -87,11 +95,12 @@ const StoneInputGroup = ({ label, stone, onStoneChange, idPrefix, isSideStone = 
 };
 
 function App() {
+  const [language, setLanguage] = useState('en');
   const [customerName, setCustomerName] = useState('');
   const [material, setMaterial] = useState('silver925');
   const [grams, setGrams] = useState('');
   const [showGramsInQuote, setShowGramsInQuote] = useState(true);
-  const [images, setImages] = useState<string[]>([]);
+  const [images, setImages] = useState<ImageState[]>([]);
   const [cadCost, setCadCost] = useState('');
   const [laborCost, setLaborCost] = useState('');
   const [margin, setMargin] = useState('20');
@@ -103,6 +112,8 @@ function App() {
   const [sideStones, setSideStones] = useState<Stone[]>([]);
 
   const [summary, setSummary] = useState<ReturnType<typeof calculateCosts> | null>(null);
+  const [finalPrice, setFinalPrice] = useState('');
+
 
   const handleAddSideStone = () => {
     setSideStones([...sideStones, { ...getInitialStoneState(), quantity: 1, id: `side-${Date.now()}` }]);
@@ -125,11 +136,20 @@ function App() {
         }
 
         const imagePromises = files.map(file => {
-            return new Promise<string>((resolve, reject) => {
+            return new Promise<ImageState>((resolve, reject) => {
                 const reader = new FileReader();
                 reader.onloadend = () => {
                     if (typeof reader.result === 'string') {
-                        resolve(reader.result);
+                        const img = new Image();
+                        img.onload = () => {
+                            resolve({
+                                src: reader.result as string,
+                                width: img.width,
+                                height: img.height
+                            });
+                        };
+                        img.onerror = reject;
+                        img.src = reader.result as string;
                     } else {
                         reject(new Error('File could not be read as data URL string.'));
                     }
@@ -140,7 +160,7 @@ function App() {
         });
 
         Promise.all(imagePromises)
-            .then(base64Images => { setImages(base64Images); })
+            .then(imageData => { setImages(imageData); })
             .catch(error => console.error("Error reading files:", error));
     }
   };
@@ -148,19 +168,22 @@ function App() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const summaryData = calculateCosts({
-        customerName, material, grams, showGramsInQuote, images, cadCost, laborCost, margin, mainStone, sideStones
+        customerName, material, grams, showGramsInQuote, images, cadCost, laborCost, margin, mainStone, sideStones, language
     });
     setSummary(summaryData);
+    setFinalPrice(summaryData.totalPrice.toFixed(2));
   };
   
   const handleDownloadShopPDF = () => {
     if (!summary) return;
-    generateShopPdf(summary, { material, grams });
+    const updatedSummary = { ...summary, totalPrice: parseFloat(finalPrice) || summary.totalPrice };
+    generateShopPdf(updatedSummary, { material, grams }, language);
   };
 
   const handleDownloadCustomerPDF = () => {
     if (!summary) return;
-    generateCustomerPdf(summary, { material, grams });
+    const updatedSummary = { ...summary, totalPrice: parseFloat(finalPrice) || summary.totalPrice };
+    generateCustomerPdf(updatedSummary, { material, grams }, language);
   };
   
   const SummaryItem = ({ label, value, remarks = '' }) => (
@@ -169,7 +192,7 @@ function App() {
         <span>{label}</span>
         {remarks && <span className="item-remarks" style={{whiteSpace: 'pre-wrap'}}>{remarks}</span>}
       </div>
-      <span>{formatCurrency(value)}</span>
+      <span>{formatCurrency(value, language)}</span>
     </div>
   );
   
@@ -180,161 +203,182 @@ function App() {
       </div>
   );
 
-
   return (
     <main className="container">
-      <h1>Jewelry Pricing Calculator</h1>
+      <div className="language-switcher">
+        <a href="#" onClick={(e) => { e.preventDefault(); setLanguage('en'); }} className={language === 'en' ? 'active' : ''}>English</a>
+        <span>|</span>
+        <a href="#" onClick={(e) => { e.preventDefault(); setLanguage('th'); }} className={language === 'th' ? 'active' : ''}>ไทย</a>
+      </div>
+      <h1>{t(language, 'appTitle')}</h1>
       <form onSubmit={handleSubmit} aria-labelledby="form-heading">
         <div className="form-group">
-          <label htmlFor="customerName">Customer Name</label>
+          <label htmlFor="customerName">{t(language, 'customerNameLabel')}</label>
           <input
             id="customerName"
             type="text"
             value={customerName}
             onChange={(e) => setCustomerName(e.target.value)}
-            placeholder="Enter customer's name"
+            placeholder={t(language, 'customerNamePlaceholder')}
             aria-label="Customer Name"
           />
         </div>
 
         <div className="form-group">
-          <label htmlFor="material">Material</label>
+          <label htmlFor="material">{t(language, 'materialLabel')}</label>
           <div className="grid-group">
             <select
               id="material"
               value={material}
               onChange={(e) => setMaterial(e.target.value)}
             >
-              <option value="silver925">Silver 925</option>
-              <option value="gold9k">Gold 9k</option>
-              <option value="gold14k">Gold 14k</option>
-              <option value="gold18k">Gold 18k</option>
-              <option value="pt950">Platinum 950</option>
+              {materialKeys.map(key => <option key={key} value={key}>{t(language, key)}</option>)}
             </select>
             <input
               type="number"
               value={grams}
               onChange={(e) => setGrams(e.target.value)}
-              placeholder="Grams (e.g., 5.5)"
+              placeholder={t(language, 'gramsPlaceholder')}
               aria-label="Weight in grams"
               step="0.01"
             />
           </div>
           <div className="checkbox-group">
               <input type="checkbox" id="showGrams" checked={showGramsInQuote} onChange={(e) => setShowGramsInQuote(e.target.checked)} />
-              <label htmlFor="showGrams">Show grams in customer quotation</label>
+              <label htmlFor="showGrams">{t(language, 'showGramsLabel')}</label>
           </div>
         </div>
 
         <div className="form-group">
-            <label htmlFor="images">Reference Images (up to 5)</label>
+            <label htmlFor="images">{t(language, 'refImagesLabel')}</label>
             <input type="file" id="images" multiple accept="image/*" onChange={handleImageChange} aria-label="Reference Images" />
             <div className="image-preview-container">
-                {images.map((img, i) => <img key={i} src={img} alt={`preview ${i+1}`} className="image-preview" />)}
+                {images.map((img, i) => <img key={i} src={img.src} alt={`preview ${i+1}`} className="image-preview" />)}
             </div>
         </div>
 
 
         <div className="form-group">
-          <label htmlFor="cadCost">CAD Cost</label>
+          <label htmlFor="cadCost">{t(language, 'cadCostLabel')}</label>
           <input
             id="cadCost"
             type="number"
             value={cadCost}
             onChange={(e) => setCadCost(e.target.value)}
-            placeholder="Enter cost"
+            placeholder={t(language, 'costPlaceholder')}
             aria-label="CAD cost"
             step="0.01"
           />
         </div>
 
-        <StoneInputGroup label="Main Stone" stone={mainStone} onStoneChange={setMainStone} idPrefix="mainStone"/>
+        <StoneInputGroup label={t(language, 'mainStoneLabel')} stone={mainStone} onStoneChange={setMainStone} idPrefix="mainStone" lang={language} />
 
         <div className="side-stones-section">
             {sideStones.map((stone, index) => (
                 <StoneInputGroup 
                     key={stone.id}
-                    label={`Side Stone ${index + 1}`} 
+                    label={`${t(language, 'sideStoneLabel')} ${index + 1}`} 
                     stone={stone}
                     onStoneChange={(updatedStone) => handleSideStoneChange(stone.id, updatedStone)}
                     idPrefix={`sideStone${index}`}
                     isSideStone={true}
                     onRemove={() => handleRemoveSideStone(stone.id)}
+                    lang={language}
                 />
             ))}
-            <button type="button" className="add-stone-btn" onClick={handleAddSideStone}>+ Add Side Stone Type</button>
+            <button type="button" className="add-stone-btn" onClick={handleAddSideStone}>{t(language, 'addSideStoneBtn')}</button>
         </div>
 
 
         <div className="form-group">
-          <label htmlFor="laborCost">Labor Cost</label>
+          <label htmlFor="laborCost">{t(language, 'laborCostLabel')}</label>
           <input
             id="laborCost"
             type="number"
             value={laborCost}
             onChange={(e) => setLaborCost(e.target.value)}
-            placeholder="Enter cost"
+            placeholder={t(language, 'costPlaceholder')}
             aria-label="Labor cost"
             step="0.01"
           />
         </div>
         
         <div className="form-group">
-          <label htmlFor="margin">Margin (%)</label>
+          <label htmlFor="margin">{t(language, 'marginLabel')}</label>
           <input
             id="margin"
             type="number"
             value={margin}
             onChange={(e) => setMargin(e.target.value)}
-            placeholder="e.g., 20"
+            placeholder={t(language, 'marginPlaceholder')}
             aria-label="Margin in percent"
             step="1"
           />
         </div>
 
-        <button type="submit">Calculate Total Price</button>
+        <button type="submit">{t(language, 'calculateBtn')}</button>
       </form>
 
       {summary !== null && (
         <section className="summary" aria-live="polite">
             <div className="view-switcher">
-                <button className={summaryView === 'shop' ? 'active' : ''} onClick={() => setSummaryView('shop')}>For Shop</button>
-                <button className={summaryView === 'customer' ? 'active' : ''} onClick={() => setSummaryView('customer')}>For Customer</button>
+                <button className={summaryView === 'shop' ? 'active' : ''} onClick={() => setSummaryView('shop')}>{t(language, 'shopView')}</button>
+                <button className={summaryView === 'customer' ? 'active' : ''} onClick={() => setSummaryView('customer')}>{t(language, 'customerView')}</button>
             </div>
             {summaryView === 'shop' ? (
                 <>
-                    <h2>Cost Breakdown</h2>
+                    <h2>{t(language, 'costBreakdown')}</h2>
                     <div className="summary-details">
-                        <SummaryItem label="Material Cost (+15%)" value={summary.materialCost} remarks={`${material.replace(/([a-z])([A-Z0-9])/g, '$1 $2').replace(/^./, str => str.toUpperCase())} (${grams || 0}g)`}/>
-                        <SummaryItem label="CAD Cost" value={summary.cadCost} />
-                        <SummaryItem label="Main Stone Cost" value={summary.mainStoneCost} remarks={summary.mainStoneRemarks}/>
-                        <SummaryItem label="Side Stones Cost" value={summary.sideStonesCost} remarks={summary.sideStonesRemarks}/>
-                        <SummaryItem label="Labor Cost" value={summary.laborCost} />
+                        <SummaryItem label={t(language, 'materialCostLabel')} value={summary.materialCost} remarks={`${t(language, material)} (${grams || 0}${t(language, 'gramsUnit')})`}/>
+                        <SummaryItem label={t(language, 'cadCostLabel')} value={summary.cadCost} />
+                        <SummaryItem label={t(language, 'mainStoneLabel')} value={summary.mainStoneCost} remarks={summary.mainStoneRemarks}/>
+                        <SummaryItem label={t(language, 'sideStonesCostLabel')} value={summary.sideStonesCost} remarks={summary.sideStonesRemarks}/>
+                        <SummaryItem label={t(language, 'laborCostLabel')} value={summary.laborCost} />
                     </div>
                     <div className="summary-item summary-subtotal">
-                      <span>Subtotal</span>
-                      <span>{formatCurrency(summary.subtotal)}</span>
+                      <span>{t(language, 'subtotalLabel')}</span>
+                      <span>{formatCurrency(summary.subtotal, language)}</span>
                     </div>
                     <div className="summary-item">
-                      <span>Margin ({summary.marginPercentage}%)</span>
-                      <span>{formatCurrency(summary.marginAmount)}</span>
+                      <span>{t(language, 'marginAmountLabel', { marginPercentage: summary.marginPercentage })}</span>
+                      <span>{formatCurrency(summary.marginAmount, language)}</span>
                     </div>
-                    <p className="total-price">{formatCurrency(summary.totalPrice)}</p>
+                    <div className="total-price-group">
+                        <label htmlFor="finalPrice">{t(language, 'totalShopLabel')}</label>
+                        <input
+                            id="finalPrice"
+                            type="number"
+                            value={finalPrice}
+                            onChange={(e) => setFinalPrice(e.target.value)}
+                            aria-label="Final Price"
+                            step="0.01"
+                        />
+                    </div>
                 </>
             ) : (
                 <>
-                    <h2>Quotation</h2>
+                    <h2>{t(language, 'quotation')}</h2>
                     <div className="customer-spec-list">
-                      <SpecItem label="Material" value={`${material.replace(/([a-z])([A-Z0-9])/g, '$1 $2').replace(/^./, str => str.toUpperCase())}${summary.showGramsInQuote ? ` (${grams || 0}g)` : ''}`} />
-                      {summary.mainStoneRemarks && <SpecItem label="Main Stone" value={summary.mainStoneRemarks} />}
-                      {summary.sideStonesRemarks && <SpecItem label="Side Stones" value={summary.sideStonesRemarks.replace(/\n/g, ', ')} />}
+                      <SpecItem label={t(language, 'materialLabel')} value={`${t(language, material)}${summary.showGramsInQuote ? ` (${grams || 0}${t(language, 'gramsUnit')})` : ''}`} />
+                      {summary.mainStoneRemarks && <SpecItem label={t(language, 'mainStoneLabel')} value={summary.mainStoneRemarks} />}
+                      {summary.sideStonesRemarks && <SpecItem label={t(language, 'sideStoneLabel')} value={summary.sideStonesRemarks.replace(/\n/g, ', ')} />}
                     </div>
-                    <p className="total-price">{formatCurrency(summary.totalPrice)}</p>
+                    <div className="total-price-group customer">
+                        <label htmlFor="finalPrice">{t(language, 'totalCustomerLabel')}</label>
+                        <input
+                            id="finalPrice"
+                            type="number"
+                            value={finalPrice}
+                            onChange={(e) => setFinalPrice(e.target.value)}
+                            aria-label="Final Price"
+                            step="0.01"
+                        />
+                    </div>
                 </>
             )}
             <div className="download-grid">
-                <button type="button" className="download-btn shop" onClick={handleDownloadShopPDF}>Download Shop PDF</button>
-                <button type="button" className="download-btn customer" onClick={handleDownloadCustomerPDF}>Download Customer PDF</button>
+                <button type="button" className="download-btn shop" onClick={handleDownloadShopPDF}>{t(language, 'downloadShopPDF')}</button>
+                <button type="button" className="download-btn customer" onClick={handleDownloadCustomerPDF}>{t(language, 'downloadCustomerPDF')}</button>
             </div>
         </section>
       )}
