@@ -1,3 +1,4 @@
+
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -11,6 +12,7 @@ import {
   diamondDetailKeys,
   getInitialStoneState,
   jewelryTypeKeys,
+  diamondConversionTableLimited,
 } from './constants.js';
 import { formatCurrency, calculateCosts } from './utils.js';
 import { generateShopPdf, generateCustomerPdf, generateFactoryPdf } from './pdf.js';
@@ -192,43 +194,57 @@ const StoneInputGroup = ({ label, stone, onStoneChange, idPrefix, isSideStone = 
     onStoneChange({ ...stone, [field]: value });
   };
 
-  const toggleDetails = () => {
-    onStoneChange({ ...stone, useDetails: !stone.useDetails });
+  const handleModeChange = (mode) => {
+    // Reset cost when changing mode to avoid carrying over values
+    onStoneChange({ ...getInitialStoneState(), ...stone, calculationMode: mode, cost: '' });
+  };
+
+  const handleDiameterModeChange = (field, value) => {
+    const newStone = { ...stone, [field]: value };
+    const diameter = field === 'diameter' ? value : newStone.diameter;
+    const pricePerCarat = field === 'pricePerCarat' ? value : newStone.pricePerCarat;
+
+    if (diameter && pricePerCarat) {
+        const conversion = diamondConversionTableLimited.find(d => d.diameter_mm === String(diameter));
+        if (conversion) {
+            const weight = parseFloat(conversion.weight_ct);
+            const calculatedCost = weight * (parseFloat(pricePerCarat) || 0);
+            newStone.cost = isNaN(calculatedCost) ? '' : calculatedCost.toString();
+        } else {
+            newStone.cost = '';
+        }
+    } else {
+        newStone.cost = '';
+    }
+    onStoneChange(newStone);
   };
 
   return (
     <div className="form-group stone-group">
-      <label htmlFor={`${idPrefix}Cost`}>{label}</label>
+      <label>{label}</label>
       {isSideStone && onRemove && (
         <button type="button" onClick={onRemove} className="remove-stone-btn" aria-label={`Remove ${label}`}>&times;</button>
       )}
-      <div className={`grid-group ${isSideStone ? 'side-stone' : ''}`}>
-        <input
-          id={`${idPrefix}Cost`}
-          type="number"
-          value={stone.cost}
-          onChange={(e) => handleInputChange('cost', e.target.value)}
-          placeholder={t(lang, 'costPerStonePlaceholder')}
-          aria-label={`${label} cost`}
-          step={0.01}
-        />
-        {isSideStone && (
-          <input
-            type="number"
-            value={stone.quantity}
-            onChange={(e) => handleInputChange('quantity', e.target.value)}
-            placeholder={t(lang, 'qtyPlaceholder')}
-            aria-label={`${label} quantity`}
-            step={1}
-            min="1"
-          />
-        )}
-        <button type="button" className="toggle-details-btn" onClick={toggleDetails}>
-          {stone.useDetails ? t(lang, 'toggleDetailsManual') : t(lang, 'toggleDetailsDiamond')}
-        </button>
+      <div className="mode-switcher-container">
+        <div className="mode-switcher">
+            <button type="button" className={stone.calculationMode === 'manual' ? 'active' : ''} onClick={() => handleModeChange('manual')}>{t(lang, 'modeRemarks')}</button>
+            <button type="button" className={stone.calculationMode === 'details' ? 'active' : ''} onClick={() => handleModeChange('details')}>{t(lang, 'modeDetails')}</button>
+            {isSideStone && <button type="button" className={stone.calculationMode === 'byDiameter' ? 'active' : ''} onClick={() => handleModeChange('byDiameter')}>{t(lang, 'modeDiameter')}</button>}
+        </div>
       </div>
+      
+      {(stone.calculationMode === 'manual' || stone.calculationMode === 'details') && (
+        <div className={`grid-group ${isSideStone ? 'side-stone-manual' : 'main-stone-manual'}`}>
+            <input id={`${idPrefix}Cost`} type="number" value={stone.cost} onChange={(e) => handleInputChange('cost', e.target.value)} placeholder={t(lang, 'costPerStonePlaceholder')} aria-label={`${label} cost`} step={0.01} />
+            {isSideStone && <input type="number" value={stone.quantity} onChange={(e) => handleInputChange('quantity', e.target.value)} placeholder={t(lang, 'qtyPlaceholder')} aria-label={`${label} quantity`} step={1} min="1"/>}
+        </div>
+      )}
 
-      {stone.useDetails ? (
+      {stone.calculationMode === 'manual' && (
+        <input type="text" value={stone.manualRemarks} onChange={(e) => handleInputChange('manualRemarks', e.target.value)} placeholder={t(lang, 'remarksPlaceholder')} aria-label={`${label} remarks`} />
+      )}
+
+      {stone.calculationMode === 'details' && (
         <div className="details-grid">
           <select value={stone.shape} onChange={(e) => handleInputChange('shape', e.target.value)} aria-label={`${label} Shape`}>
              {diamondShapeKeys.map(key => <option key={key} value={key}>{t(lang, key)}</option>)}
@@ -247,14 +263,16 @@ const StoneInputGroup = ({ label, stone, onStoneChange, idPrefix, isSideStone = 
              {diamondDetailKeys.map(key => <option key={key} value={key}>{t(lang, key)}</option>)}
           </select>
         </div>
-      ) : (
-        <input
-          type="text"
-          value={stone.manualRemarks}
-          onChange={(e) => handleInputChange('manualRemarks', e.target.value)}
-          placeholder={t(lang, 'remarksPlaceholder')}
-          aria-label={`${label} remarks`}
-        />
+      )}
+
+      {stone.calculationMode === 'byDiameter' && isSideStone && (
+        <div className="grid-group side-stone-diameter">
+          <select value={stone.diameter} onChange={(e) => handleDiameterModeChange('diameter', e.target.value)} aria-label={`${label} Diameter`}>
+            {diamondConversionTableLimited.map(d => <option key={d.diameter_mm} value={d.diameter_mm}>{d.diameter_mm} {t(lang, 'mmUnit')}</option>)}
+          </select>
+          <input type="number" value={stone.pricePerCarat} onChange={(e) => handleDiameterModeChange('pricePerCarat', e.target.value)} placeholder={t(lang, 'pricePerCaratPlaceholder')} aria-label={`${label} Price per Carat`} step={0.01}/>
+          <input type="number" value={stone.quantity} onChange={(e) => handleDiameterModeChange('quantity', e.target.value)} placeholder={t(lang, 'qtyPlaceholder')} aria-label={`${label} quantity`} step={1} min="1"/>
+        </div>
       )}
     </div>
   );

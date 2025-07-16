@@ -1,3 +1,4 @@
+
 export const translations = {
   en: {
     // App
@@ -25,10 +26,12 @@ export const translations = {
     remarksPlaceholder: 'Remarks (e.g., Blue Sapphire, 2ct)',
     weightPlaceholder: 'Weight (ct)',
     marginPlaceholder: 'e.g., 20',
+    pricePerCaratPlaceholder: 'Price/ct.',
 
     // Buttons
-    toggleDetailsManual: 'Enter Remarks Manually',
-    toggleDetailsDiamond: 'Add Diamond Details',
+    modeRemarks: 'Remarks',
+    modeDetails: 'Details',
+    modeDiameter: 'Diameter (Round)',
     addSideStoneBtn: '+ Add Side Stone Type',
     calculateBtn: 'Calculate Total Price',
     downloadShopPDF: 'Download PDF (Shop)',
@@ -85,6 +88,7 @@ export const translations = {
 
     // Units
     gramsUnit: 'g',
+    mmUnit: 'mm',
 
     // Jewelry Types
     ring: 'Ring',
@@ -120,6 +124,8 @@ export const translations = {
     cut: 'Cut',
     clarity: 'Clarity',
     polish: 'Polish',
+    diameterLabel: 'Diameter',
+    pricePerCaratLabel: 'Price per Carat',
   },
   th: {
     // App
@@ -147,10 +153,12 @@ export const translations = {
     remarksPlaceholder: 'หมายเหตุ (เช่น ไพลิน, 2 กะรัต)',
     weightPlaceholder: 'น้ำหนัก (กะรัต)',
     marginPlaceholder: 'เช่น 20',
+    pricePerCaratPlaceholder: 'ราคา/กะรัต',
 
     // Buttons
-    toggleDetailsManual: 'กรอกหมายเหตุเอง',
-    toggleDetailsDiamond: 'เพิ่มรายละเอียดเพชร',
+    modeRemarks: 'หมายเหตุ',
+    modeDetails: 'รายละเอียด',
+    modeDiameter: 'ขนาด (กลม)',
     addSideStoneBtn: '+ เพิ่มประเภทเพชรล้อม',
     calculateBtn: 'คำนวณราคาทั้งหมด',
     downloadShopPDF: 'ดาวน์โหลด PDF (ร้านค้า)',
@@ -206,6 +214,7 @@ export const translations = {
 
     // Units
     gramsUnit: 'ก',
+    mmUnit: 'มม.',
     
     // Jewelry Types
     ring: 'แหวน',
@@ -241,6 +250,8 @@ export const translations = {
     cut: 'เจียระไน',
     clarity: 'ความสะอาด',
     polish: 'การขัดเงา',
+    diameterLabel: 'ขนาด',
+    pricePerCaratLabel: 'ราคาต่อกะรัต',
   }
 };
 

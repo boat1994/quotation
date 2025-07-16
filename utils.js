@@ -1,4 +1,5 @@
-import { materialPrices } from './constants.js';
+
+import { materialPrices, diamondConversionTableLimited } from './constants.js';
 import { t } from './i18n.js';
 
 export const formatCurrency = (value, lang = 'en') =>
@@ -10,7 +11,17 @@ export const formatCurrency = (value, lang = 'en') =>
 export const getStoneRemarks = (stone, lang = 'en') => {
     const qty = typeof stone.quantity === 'string' ? parseInt(stone.quantity, 10) : stone.quantity;
     const qtyText = (qty > 1 && isFinite(qty)) ? ` x ${qty}` : '';
-    if (stone.useDetails) {
+    
+    if (stone.calculationMode === 'byDiameter') {
+        const conversion = diamondConversionTableLimited.find(d => d.diameter_mm === String(stone.diameter));
+        if (conversion) {
+            const weight = parseFloat(conversion.weight_ct);
+            return `${t(lang, 'round')} ${stone.diameter}${t(lang, 'mmUnit')} (${weight.toFixed(3)}${t(lang, 'carat')})${qtyText}`;
+        }
+        return `${t(lang, 'round')} ${stone.diameter}${t(lang, 'mmUnit')}${qtyText}`;
+    }
+
+    if (stone.calculationMode === 'details') {
         if (!stone.weight) return `${t(lang, 'waitingForDetails')}${qtyText}`;
         
         const parts = [
