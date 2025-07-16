@@ -103,8 +103,6 @@ const addTermsAndConditions = (doc, lang, startY) => {
     addTermSection('pdfPaymentTermsTitle', ['pdfPaymentTerm1', 'pdfPaymentTerm2']);
     addTermSection('pdfPaymentMethodTitle', 'pdfPaymentMethodText');
     addTermSection('pdfLeadTimeTitle', 'pdfLeadTimeText');
-    addTermSection('pdfDeliveryTitle', ['pdfDeliveryTerm1', 'pdfDeliveryTerm2']);
-    addTermSection('pdfWarrantyTitle', ['pdfWarrantyTerm1', 'pdfWarrantyTerm2', 'pdfWarrantyTerm3']);
     addTermSection('pdfCancellationTitle', 'pdfCancellationText');
 
     return yPos;

@@ -278,7 +278,7 @@ const StoneInputGroup = ({ label, stone, onStoneChange, idPrefix, isSideStone = 
 };
 
 function App() {
-  const [language, setLanguage] = useState('en');
+  const [language, setLanguage] = useState('th');
   const [customerName, setCustomerName] = useState('');
   const [jewelryType, setJewelryType] = useState('ring');
   const [material, setMaterial] = useState('silver925');
