@@ -32,10 +32,6 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-body.modal-open {
-  overflow: hidden;
-}
-
 /* Main container */
 .container {
   background: var(--container-bg);
@@ -393,6 +389,7 @@ button:active {
 .modal-content {
     background: var(--summary-bg);
     padding: 2.5rem;
+    margin-top: 3rem;
     border-radius: 16px;
     border: 1px solid var(--summary-border);
     box-shadow: 0 8px 32px var(--shadow-color);

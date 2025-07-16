@@ -2,7 +2,7 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useLayoutEffect } from 'react';
 import ReactDOM from 'react-dom/client';
 import {
   materialKeys,
@@ -56,7 +56,7 @@ const SummaryModal = ({
     handleDownloadFactoryPDF,
     language,
 }) => {
-    useEffect(() => {
+    useLayoutEffect(() => {
         const handleKeyDown = (event) => {
             if (event.key === 'Escape') {
                 onClose();
@@ -64,16 +64,20 @@ const SummaryModal = ({
         };
 
         if (isOpen) {
-            document.body.classList.add('modal-open');
+            const originalScrollY = window.scrollY;
+            document.body.style.position = 'fixed';
+            document.body.style.top = `-${originalScrollY}px`;
+            document.body.style.width = '100%';
             window.addEventListener('keydown', handleKeyDown);
-        } else {
-            document.body.classList.remove('modal-open');
+            
+            return () => {
+                document.body.style.position = '';
+                document.body.style.top = '';
+                document.body.style.width = '';
+                window.scrollTo(0, originalScrollY);
+                window.removeEventListener('keydown', handleKeyDown);
+            };
         }
-
-        return () => {
-            document.body.classList.remove('modal-open');
-            window.removeEventListener('keydown', handleKeyDown);
-        };
     }, [isOpen, onClose]);
     
     // Reset view when summary changes (modal opens with new data)
