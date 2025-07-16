@@ -56,24 +56,22 @@ const SummaryModal = ({
     handleDownloadFactoryPDF,
     language,
 }) => {
+    // Scroll locking effect
     useLayoutEffect(() => {
-        const handleKeyDown = (event) => {
-            if (event.key === 'Escape') {
-                onClose();
-            }
-        };
-
         if (isOpen) {
+            const originalStyle = window.getComputedStyle(document.body).overflow;
             const originalScrollY = window.scrollY;
-            document.body.style.position = 'fixed';
-            document.body.style.top = `-${originalScrollY}px`;
-            document.body.style.width = '100%';
-            window.addEventListener('keydown', handleKeyDown);
+            document.body.style.overflow = 'hidden';
             
+            const handleKeyDown = (event) => {
+                if (event.key === 'Escape') {
+                    onClose();
+                }
+            };
+            window.addEventListener('keydown', handleKeyDown);
+
             return () => {
-                document.body.style.position = '';
-                document.body.style.top = '';
-                document.body.style.width = '';
+                document.body.style.overflow = originalStyle;
                 window.scrollTo(0, originalScrollY);
                 window.removeEventListener('keydown', handleKeyDown);
             };
@@ -94,12 +92,16 @@ const SummaryModal = ({
     return (
         <div className="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="summary-heading" onClick={onClose}>
             <div className="modal-content" onClick={e => e.stopPropagation()}>
-                <button className="modal-close" onClick={onClose} aria-label={t(language, 'closeBtnLabel')}>&times;</button>
                 <div className="summary">
                     <div className="view-switcher">
                         <button className={summaryView === 'shop' ? 'active' : ''} onClick={() => setSummaryView('shop')}>{t(language, 'shopView')}</button>
                         <button className={summaryView === 'customer' ? 'active' : ''} onClick={() => setSummaryView('customer')}>{t(language, 'customerView')}</button>
                     </div>
+
+                    <button className="modal-back-btn" onClick={onClose} aria-label={t(language, 'backBtnLabel')}>
+                        {t(language, 'backBtn')}
+                    </button>
+
                     {summaryView === 'shop' ? (
                         <>
                             <h2 id="summary-heading">{t(language, 'costBreakdown')}</h2>

@@ -407,30 +407,31 @@ button:active {
     to { transform: translateY(0); }
 }
 
-.modal-close {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
+.modal-back-btn {
+    /* Reset generic button styles */
     background: transparent;
-    color: var(--text-color);
     border: none;
-    border-radius: 50%;
-    width: 36px;
-    height: 36px;
-    font-size: 1.75rem;
-    line-height: 36px;
-    text-align: center;
-    cursor: pointer;
-    padding: 0;
-    margin: 0;
-    transition: all 0.2s;
     box-shadow: none;
+    padding: 0;
+    text-align: left;
+    width: auto;
+    
+    /* New styles */
+    color: var(--text-color);
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    margin: -1rem 0 1.5rem 0;
+    transition: color 0.2s;
 }
 
-.modal-close:hover {
+.modal-back-btn:hover {
     color: var(--primary-color);
-    background: var(--secondary-color);
-    transform: rotate(90deg);
+    text-decoration: underline;
+    /* Reset hover effects from generic button */
+    background: transparent;
+    transform: none;
+    box-shadow: none;
 }
 
 
