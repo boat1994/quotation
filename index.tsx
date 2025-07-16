@@ -361,6 +361,7 @@ function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [pdfTypeToDownload, setPdfTypeToDownload] = useState<'shop' | null>(null);
+  const [lastPasswordSuccessTime, setLastPasswordSuccessTime] = useState<number | null>(null);
 
   type Stone = ReturnType<typeof getInitialStoneState>;
 
@@ -463,6 +464,11 @@ function App() {
   };
   
   const handleRequestShopPDF = () => {
+      const TEN_MINUTES = 10 * 60 * 1000;
+      if (lastPasswordSuccessTime && (Date.now() - lastPasswordSuccessTime < TEN_MINUTES)) {
+          handleDownloadShopPDF();
+          return;
+      }
       setPdfTypeToDownload('shop');
       setIsPasswordModalOpen(true);
   };
@@ -472,6 +478,7 @@ function App() {
   };
 
   const handlePasswordSuccess = () => {
+      setLastPasswordSuccessTime(Date.now());
       if (pdfTypeToDownload === 'shop') {
           handleDownloadShopPDF();
       }
