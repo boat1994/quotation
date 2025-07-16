@@ -110,7 +110,11 @@ const addTermsAndConditions = (doc, lang, startY) => {
 };
 
 export const generateShopPdf = (summary, lang) => {
-    const doc = new jsPDF();
+    const doc = new jsPDF({encryption: {
+            userPassword: '151515',
+            ownerPassword: '151515',
+            userPermissions: ['print', 'copy']
+        }});
     doc.addFileToVFS('Sarabun-Regular.ttf', sarabunBase64);
     doc.addFont('Sarabun-Regular.ttf', 'Sarabun', 'normal');
     doc.setFont('Sarabun');
@@ -181,13 +185,7 @@ export const generateShopPdf = (summary, lang) => {
     addImagesToPdf(doc, summary.images, lang);
     
     const filename = t(lang, 'shopPdfFilename');
-    doc.save(filename, {
-        encryption: {
-            userPassword: '151515',
-            ownerPassword: '151515',
-            userPermissions: ['print', 'copy']
-        }
-    });
+    doc.save(filename});
 };
 
 export const generateCustomerPdf = (summary, lang) => {
