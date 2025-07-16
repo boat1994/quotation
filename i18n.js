@@ -191,7 +191,7 @@ export const translations = {
     sideStonesCostLabel: 'ค่าหินข้าง',
     subtotalLabel: 'ยอดรวมย่อย',
     marginAmountLabel: 'กำไร ({marginPercentage}%)',
-    totalShopLabel: 'ต้นทุนโดยประมาณ:',
+    totalShopLabel: 'ราคาสุทธิ:',
     totalCustomerLabel: 'ราคาประเมิน:',
     remarksForFactoryShopLabel: 'หมายเหตุสำหรับโรงงานและร้านค้า',
     remarksForCustomerLabel: 'หมายเหตุสำหรับลูกค้า',
@@ -226,7 +226,7 @@ export const translations = {
     
     pdfTermsTitle: 'เงื่อนไขและข้อตกลง',
     pdfPriceValidityTitle: 'การยืนราคา',
-    pdfPriceValidityText: 'ใบเสนอราคานีมีอายุ 7 วัน นับจากวันที่ออกเอกสาร',
+    pdfPriceValidityText: 'ใบเสนอราคามีอายุ 7 วัน นับจากวันที่ออกเอกสาร',
     pdfPaymentTermsTitle: 'เงื่อนไขการชำระเงิน',
     pdfPaymentTerm1: 'ชำระเงินมัดจำ 50% ของยอดรวมสุทธิ เพื่อยืนยันการสั่งผลิต',
     pdfPaymentTerm2: 'ชำระส่วนที่เหลืออีก 50% ก่อนการจัดส่งสินค้า',
