@@ -48,7 +48,7 @@ const SummaryModal = ({
     summaryView,
     setSummaryView,
     finalPrice,
-    setFinalPrice,
+    onFinalPriceChange,
     remarksForFactoryShop,
     setRemarksForFactoryShop,
     remarksForCustomer,
@@ -119,7 +119,7 @@ const SummaryModal = ({
                               <span>{formatCurrency(summary.subtotal, language)}</span>
                             </div>
                             <div className="summary-item">
-                              <span>{t(language, 'marginAmountLabel', { marginPercentage: summary.marginPercentage })}</span>
+                              <span>{t(language, 'marginAmountLabel', { marginPercentage: summary.marginPercentage.toFixed(2) })}</span>
                               <span>{formatCurrency(summary.marginAmount, language)}</span>
                             </div>
                             <div className="total-price-group">
@@ -128,9 +128,10 @@ const SummaryModal = ({
                                     id="finalPrice"
                                     type="number"
                                     value={finalPrice}
-                                    onChange={(e) => setFinalPrice(e.target.value)}
+                                    onChange={(e) => onFinalPriceChange(e.target.value)}
                                     aria-label="Final Price"
                                     step={0.01}
+                                    inputMode="decimal"
                                 />
                             </div>
                         </>
@@ -149,9 +150,10 @@ const SummaryModal = ({
                                     id="finalPrice"
                                     type="number"
                                     value={finalPrice}
-                                    onChange={(e) => setFinalPrice(e.target.value)}
+                                    onChange={(e) => onFinalPriceChange(e.target.value)}
                                     aria-label="Final Price"
                                     step={0.01}
+                                    inputMode="decimal"
                                 />
                             </div>
                         </>
@@ -235,8 +237,8 @@ const StoneInputGroup = ({ label, stone, onStoneChange, idPrefix, isSideStone = 
       
       {(stone.calculationMode === 'manual' || stone.calculationMode === 'details') && (
         <div className={`grid-group ${isSideStone ? 'side-stone-manual' : 'main-stone-manual'}`}>
-            <input id={`${idPrefix}Cost`} type="number" value={stone.cost} onChange={(e) => handleInputChange('cost', e.target.value)} placeholder={t(lang, 'costPerStonePlaceholder')} aria-label={`${label} cost`} step={0.01} />
-            {isSideStone && <input type="number" value={stone.quantity} onChange={(e) => handleInputChange('quantity', e.target.value)} placeholder={t(lang, 'qtyPlaceholder')} aria-label={`${label} quantity`} step={1} min="1"/>}
+            <input id={`${idPrefix}Cost`} type="number" value={stone.cost} onChange={(e) => handleInputChange('cost', e.target.value)} placeholder={t(lang, 'costPerStonePlaceholder')} aria-label={`${label} cost`} step={0.01} inputMode="decimal" />
+            {isSideStone && <input type="number" value={stone.quantity} onChange={(e) => handleInputChange('quantity', e.target.value)} placeholder={t(lang, 'qtyPlaceholder')} aria-label={`${label} quantity`} step={1} min="1" inputMode="numeric" />}
         </div>
       )}
 
@@ -249,7 +251,7 @@ const StoneInputGroup = ({ label, stone, onStoneChange, idPrefix, isSideStone = 
           <select value={stone.shape} onChange={(e) => handleInputChange('shape', e.target.value)} aria-label={`${label} Shape`}>
              {diamondShapeKeys.map(key => <option key={key} value={key}>{t(lang, key)}</option>)}
           </select>
-          <input type="number" value={stone.weight} onChange={(e) => handleInputChange('weight', e.target.value)} placeholder={t(lang, 'weightPlaceholder')} step={0.01} aria-label={`${label} Weight`}/>
+          <input type="number" value={stone.weight} onChange={(e) => handleInputChange('weight', e.target.value)} placeholder={t(lang, 'weightPlaceholder')} step={0.01} aria-label={`${label} Weight`} inputMode="decimal" />
           <select value={stone.color} onChange={(e) => handleInputChange('color', e.target.value)} aria-label={`${label} Color`}>
              {diamondColors.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
@@ -270,8 +272,8 @@ const StoneInputGroup = ({ label, stone, onStoneChange, idPrefix, isSideStone = 
           <select value={stone.diameter} onChange={(e) => handleDiameterModeChange('diameter', e.target.value)} aria-label={`${label} Diameter`}>
             {diamondConversionTableLimited.map(d => <option key={d.diameter_mm} value={d.diameter_mm}>{d.diameter_mm} {t(lang, 'mmUnit')}</option>)}
           </select>
-          <input type="number" value={stone.pricePerCarat} onChange={(e) => handleDiameterModeChange('pricePerCarat', e.target.value)} placeholder={t(lang, 'pricePerCaratPlaceholder')} aria-label={`${label} Price per Carat`} step={0.01}/>
-          <input type="number" value={stone.quantity} onChange={(e) => handleDiameterModeChange('quantity', e.target.value)} placeholder={t(lang, 'qtyPlaceholder')} aria-label={`${label} quantity`} step={1} min="1"/>
+          <input type="number" value={stone.pricePerCarat} onChange={(e) => handleDiameterModeChange('pricePerCarat', e.target.value)} placeholder={t(lang, 'pricePerCaratPlaceholder')} aria-label={`${label} Price per Carat`} step={0.01} inputMode="decimal" />
+          <input type="number" value={stone.quantity} onChange={(e) => handleDiameterModeChange('quantity', e.target.value)} placeholder={t(lang, 'qtyPlaceholder')} aria-label={`${label} quantity`} step={1} min="1" inputMode="numeric" />
         </div>
       )}
     </div>
@@ -392,6 +394,27 @@ function App() {
     };
     generateFactoryPdf(updatedSummary, language);
   };
+
+  const handleFinalPriceChange = (newPriceStr: string) => {
+    setFinalPrice(newPriceStr);
+
+    const newPrice = parseFloat(newPriceStr);
+    if (summary && !isNaN(newPrice) && summary.subtotal > 0) {
+        const newMarginValue = ((newPrice - summary.subtotal) / summary.subtotal) * 100;
+        setMargin(newMarginValue.toFixed(2));
+
+        const newMarginAmount = newPrice - summary.subtotal;
+        setSummary(currentSummary => {
+            if (!currentSummary) return null;
+            return {
+                ...currentSummary,
+                marginPercentage: newMarginValue,
+                marginAmount: newMarginAmount,
+                totalPrice: newPrice,
+            }
+        });
+    }
+  };
   
 
   return (
@@ -445,6 +468,7 @@ function App() {
               placeholder={t(language, 'gramsPlaceholder')}
               aria-label="Weight in grams"
               step={0.01}
+              inputMode="decimal"
             />
           </div>
           <div className="radio-container">
@@ -481,6 +505,7 @@ function App() {
             placeholder={t(language, 'costPlaceholder')}
             aria-label="CAD cost"
             step={0.01}
+            inputMode="decimal"
           />
         </div>
 
@@ -513,6 +538,7 @@ function App() {
             placeholder={t(language, 'costPlaceholder')}
             aria-label="Labor cost"
             step={0.01}
+            inputMode="decimal"
           />
         </div>
         
@@ -526,6 +552,7 @@ function App() {
             placeholder={t(language, 'marginPlaceholder')}
             aria-label="Margin in percent"
             step={1}
+            inputMode="numeric"
           />
         </div>
 
@@ -539,7 +566,7 @@ function App() {
           summaryView={summaryView}
           setSummaryView={setSummaryView}
           finalPrice={finalPrice}
-          setFinalPrice={setFinalPrice}
+          onFinalPriceChange={handleFinalPriceChange}
           remarksForFactoryShop={remarksForFactoryShop}
           setRemarksForFactoryShop={setRemarksForFactoryShop}
           remarksForCustomer={remarksForCustomer}
