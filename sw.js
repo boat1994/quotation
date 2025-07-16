@@ -11,6 +11,7 @@ const urlsToCache = [
   'i18n.js',
   'manifest.json',
   'icon.svg',
+  'logo_base64.js',
   'https://esm.sh/@google/genai@^0.7.0',
   'https://esm.sh/react@^19.0.0-beta-0',
   'https://esm.sh/react-dom@^19.1.0/',

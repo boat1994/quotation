@@ -3,6 +3,7 @@ import jsPDF from 'jspdf';
 import { formatCurrency } from './utils.js';
 import { sarabunBase64 } from './font.js';
 import { t } from './i18n.js';
+import { logoTransparentBase64 } from './logo_base64.js';
 
 
 const addImagesToPdf = (doc, images, lang) => {
@@ -191,18 +192,20 @@ export const generateCustomerPdf = (summary, lang) => {
     const dateString = new Date().toLocaleDateString(dateLocale, { year: 'numeric', month: 'long', day: 'numeric' });
 
     // Header
-    doc.setFontSize(20);
-    doc.text(t(lang, 'customerPdfTitle'), 105, 18, { align: 'center' });
-    doc.setFontSize(11);
-    doc.text('Bogus', 20, 28);
-    doc.text(`${t(lang, 'pdfDateLabel')}${dateString}`, 190, 28, { align: 'right' });
-    doc.setLineWidth(0.5);
-    doc.line(20, 34, 190, 34);
+    const logoSize = 25;
+    doc.addImage(logoTransparentBase64, 'PNG', 20, 12, logoSize, logoSize);
 
-    let yPos = 42;
+    doc.setFontSize(20);
+    doc.text(t(lang, 'customerPdfTitle'), 105, 25, { align: 'center' });
+    doc.setFontSize(11);
+    doc.text(`${t(lang, 'pdfDateLabel')}${dateString}`, 190, 25, { align: 'right' });
+    doc.setLineWidth(0.5);
+    doc.line(20, 42, 190, 42);
+
+    let yPos = 50;
     if (summary.customerName) {
-        doc.text(`${t(lang, 'pdfForLabel')}${summary.customerName}`, 20, 40);
-        yPos = 48;
+        doc.text(`${t(lang, 'pdfForLabel')}${summary.customerName}`, 20, 48);
+        yPos = 56;
     }
 
     doc.setFontSize(14);

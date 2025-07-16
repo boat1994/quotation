@@ -89,9 +89,10 @@ body {
 }
 
 .logo {
-  max-width: 250px;
-  width: 100%;
-  height: auto;
+  width: 105px;
+  height: 100px;
+  object-fit: contain;
+  border-radius: 50%;
 }
 
 /* Form styling */

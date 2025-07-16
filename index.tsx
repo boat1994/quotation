@@ -16,7 +16,8 @@ import {
 import { formatCurrency, calculateCosts } from './utils.js';
 import { generateShopPdf, generateCustomerPdf, generateFactoryPdf } from './pdf.js';
 import { t } from './i18n.js';
-
+import { logoBase64 } from './logo_base64.js'
+ 
 interface ImageState {
   src: string;
   width: number;
@@ -399,6 +400,9 @@ function App() {
         <a href="#" onClick={(e) => { e.preventDefault(); setLanguage('en'); }} className={language === 'en' ? 'active' : ''}>English</a>
         <span>|</span>
         <a href="#" onClick={(e) => { e.preventDefault(); setLanguage('th'); }} className={language === 'th' ? 'active' : ''}>ไทย</a>
+      </div>
+      <div className="logo-container">
+        <img src={logoBase64} alt="Bogus Jewelry Logo" className="logo" />
       </div>
       <form onSubmit={handleSubmit} aria-labelledby="form-heading">
         <div className="form-group">
