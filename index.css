@@ -32,6 +32,10 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+body.modal-open {
+  overflow: hidden;
+}
+
 /* Main container */
 .container {
   background: var(--container-bg);
@@ -358,16 +362,6 @@ button:active {
   }
 }
 
-/* Summary section */
-.summary {
-  margin-top: 2.5rem;
-  padding: 2rem;
-  background-color: var(--summary-bg);
-  border: 1px solid var(--summary-border);
-  border-radius: 12px;
-  animation: fadeIn 0.5s ease-in-out;
-}
-
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -377,6 +371,74 @@ button:active {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Modal styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 1rem;
+    animation: fadeIn 0.3s ease;
+}
+
+.modal-content {
+    background: var(--summary-bg);
+    padding: 2.5rem;
+    border-radius: 16px;
+    border: 1px solid var(--summary-border);
+    box-shadow: 0 8px 32px var(--shadow-color);
+    width: 100%;
+    max-width: 650px;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    animation: fadeIn 0.3s ease, slideIn 0.4s ease;
+}
+
+@keyframes slideIn {
+    from { transform: translateY(20px); }
+    to { transform: translateY(0); }
+}
+
+.modal-close {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    background: transparent;
+    color: var(--text-color);
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    font-size: 1.75rem;
+    line-height: 36px;
+    text-align: center;
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
+    transition: all 0.2s;
+    box-shadow: none;
+}
+
+.modal-close:hover {
+    color: var(--primary-color);
+    background: var(--secondary-color);
+    transform: rotate(90deg);
+}
+
+
+/* Summary section (inside modal) */
+.summary {
+  animation: none; /* Modal handles animation */
 }
 
 .summary h2 {

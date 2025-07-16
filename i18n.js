@@ -34,6 +34,7 @@ export const translations = {
     downloadShopPDF: 'Download PDF (Shop)',
     downloadCustomerPDF: 'Download PDF (Customer)',
     downloadFactoryPDF: 'For Factory',
+    closeBtnLabel: 'Close',
     
     // Summary
     shopView: 'For Shop',
@@ -154,6 +155,7 @@ export const translations = {
     downloadShopPDF: 'ดาวน์โหลด PDF (ร้านค้า)',
     downloadCustomerPDF: 'ดาวน์โหลด PDF (ลูกค้า)',
     downloadFactoryPDF: 'สำหรับโรงงาน',
+    closeBtnLabel: 'ปิด',
     
     // Summary
     shopView: 'สำหรับร้านค้า',

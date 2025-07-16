@@ -2,7 +2,7 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
  */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
 import {
   materialKeys,
@@ -21,6 +21,165 @@ interface ImageState {
   width: number;
   height: number;
 }
+
+const SummaryItem = ({ label, value, remarks = '', lang }) => (
+    <div className="summary-item">
+      <div>
+        <span>{label}</span>
+        {remarks && <span className="item-remarks" style={{whiteSpace: 'pre-wrap'}}>{remarks}</span>}
+      </div>
+      <span>{formatCurrency(value, lang)}</span>
+    </div>
+);
+  
+const SpecItem = ({label, value}) => (
+    <div className="customer-spec-item">
+      <span className="spec-label">{label}</span>
+      <span className="spec-value" style={{whiteSpace: 'pre-wrap'}}>{value}</span>
+    </div>
+);
+
+const SummaryModal = ({
+    isOpen,
+    onClose,
+    summary,
+    summaryView,
+    setSummaryView,
+    finalPrice,
+    setFinalPrice,
+    remarksForFactoryShop,
+    setRemarksForFactoryShop,
+    remarksForCustomer,
+    setRemarksForCustomer,
+    handleDownloadShopPDF,
+    handleDownloadCustomerPDF,
+    handleDownloadFactoryPDF,
+    language,
+}) => {
+    useEffect(() => {
+        const handleKeyDown = (event) => {
+            if (event.key === 'Escape') {
+                onClose();
+            }
+        };
+
+        if (isOpen) {
+            document.body.classList.add('modal-open');
+            window.addEventListener('keydown', handleKeyDown);
+        } else {
+            document.body.classList.remove('modal-open');
+        }
+
+        return () => {
+            document.body.classList.remove('modal-open');
+            window.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [isOpen, onClose]);
+    
+    // Reset view when summary changes (modal opens with new data)
+    useEffect(() => {
+        if (summary) {
+            setSummaryView('shop');
+        }
+    }, [summary, setSummaryView]);
+
+    if (!isOpen || !summary) {
+        return null;
+    }
+
+    return (
+        <div className="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="summary-heading" onClick={onClose}>
+            <div className="modal-content" onClick={e => e.stopPropagation()}>
+                <button className="modal-close" onClick={onClose} aria-label={t(language, 'closeBtnLabel')}>&times;</button>
+                <div className="summary">
+                    <div className="view-switcher">
+                        <button className={summaryView === 'shop' ? 'active' : ''} onClick={() => setSummaryView('shop')}>{t(language, 'shopView')}</button>
+                        <button className={summaryView === 'customer' ? 'active' : ''} onClick={() => setSummaryView('customer')}>{t(language, 'customerView')}</button>
+                    </div>
+                    {summaryView === 'shop' ? (
+                        <>
+                            <h2 id="summary-heading">{t(language, 'costBreakdown')}</h2>
+                            <div className="summary-details">
+                                <SummaryItem lang={language} label={t(language, 'materialCostLabel')} value={summary.materialCost} remarks={`${t(language, summary.material)} (${summary.grams || 0}${t(language, 'gramsUnit')})`}/>
+                                <SummaryItem lang={language} label={t(language, 'cadCostLabel')} value={summary.cadCost} />
+                                <SummaryItem lang={language} label={t(language, 'mainStoneLabel')} value={summary.mainStoneCost} remarks={summary.mainStoneRemarks}/>
+                                <SummaryItem lang={language} label={t(language, 'sideStonesCostLabel')} value={summary.sideStonesCost} remarks={summary.sideStonesRemarks}/>
+                                <SummaryItem lang={language} label={t(language, 'laborCostLabel')} value={summary.laborCost} />
+                            </div>
+                            <div className="summary-item summary-subtotal">
+                              <span>{t(language, 'subtotalLabel')}</span>
+                              <span>{formatCurrency(summary.subtotal, language)}</span>
+                            </div>
+                            <div className="summary-item">
+                              <span>{t(language, 'marginAmountLabel', { marginPercentage: summary.marginPercentage })}</span>
+                              <span>{formatCurrency(summary.marginAmount, language)}</span>
+                            </div>
+                            <div className="total-price-group">
+                                <label htmlFor="finalPrice">{t(language, 'totalShopLabel')}</label>
+                                <input
+                                    id="finalPrice"
+                                    type="number"
+                                    value={finalPrice}
+                                    onChange={(e) => setFinalPrice(e.target.value)}
+                                    aria-label="Final Price"
+                                    step={0.01}
+                                />
+                            </div>
+                        </>
+                    ) : (
+                        <>
+                            <h2 id="summary-heading">{t(language, 'quotation')}</h2>
+                            <div className="customer-spec-list">
+                              {summary.jewelryType && <SpecItem label={t(language, 'jewelryTypeLabel')} value={t(language, summary.jewelryType)} />}
+                              <SpecItem label={t(language, 'materialLabel')} value={`${t(language, summary.material)}${summary.showGramsInQuote ? ` (${summary.grams || 0}${t(language, 'gramsUnit')})` : ''}`} />
+                              {summary.mainStoneRemarks && <SpecItem label={t(language, 'mainStoneLabel')} value={summary.mainStoneRemarks} />}
+                              {summary.sideStonesRemarks && <SpecItem label={t(language, 'sideStoneLabel')} value={summary.sideStonesRemarks.replace(/\n/g, ', ')} />}
+                            </div>
+                            <div className="total-price-group customer">
+                                <label htmlFor="finalPrice">{t(language, 'totalCustomerLabel')}</label>
+                                <input
+                                    id="finalPrice"
+                                    type="number"
+                                    value={finalPrice}
+                                    onChange={(e) => setFinalPrice(e.target.value)}
+                                    aria-label="Final Price"
+                                    step={0.01}
+                                />
+                            </div>
+                        </>
+                    )}
+
+                    <div className="remarks-section">
+                        <div className="form-group">
+                            <label htmlFor="remarksFactoryShop">{t(language, 'remarksForFactoryShopLabel')}</label>
+                            <textarea 
+                                id="remarksFactoryShop" 
+                                rows={3} 
+                                value={remarksForFactoryShop} 
+                                onChange={e => setRemarksForFactoryShop(e.target.value)}
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="remarksCustomer">{t(language, 'remarksForCustomerLabel')}</label>
+                            <textarea 
+                                id="remarksCustomer" 
+                                rows={3} 
+                                value={remarksForCustomer} 
+                                onChange={e => setRemarksForCustomer(e.target.value)}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="download-grid">
+                        <button type="button" className="download-btn shop" onClick={handleDownloadShopPDF}>{t(language, 'downloadShopPDF')}</button>
+                        <button type="button" className="download-btn customer" onClick={handleDownloadCustomerPDF}>{t(language, 'downloadCustomerPDF')}</button>
+                        <button type="button" className="download-btn factory" onClick={handleDownloadFactoryPDF}>{t(language, 'downloadFactoryPDF')}</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
 
 const StoneInputGroup = ({ label, stone, onStoneChange, idPrefix, isSideStone = false, onRemove = null, lang }) => {
   const handleInputChange = (field, value) => {
@@ -107,6 +266,8 @@ function App() {
   const [laborCost, setLaborCost] = useState('');
   const [margin, setMargin] = useState('20');
   const [summaryView, setSummaryView] = useState('shop');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
 
   type Stone = ReturnType<typeof getInitialStoneState>;
 
@@ -176,6 +337,7 @@ function App() {
     });
     setSummary(summaryData);
     setFinalPrice(summaryData.totalPrice.toFixed(2));
+    setIsModalOpen(true);
   };
   
   const handleDownloadShopPDF = () => {
@@ -207,22 +369,6 @@ function App() {
     generateFactoryPdf(updatedSummary, language);
   };
   
-  const SummaryItem = ({ label, value, remarks = '' }) => (
-    <div className="summary-item">
-      <div>
-        <span>{label}</span>
-        {remarks && <span className="item-remarks" style={{whiteSpace: 'pre-wrap'}}>{remarks}</span>}
-      </div>
-      <span>{formatCurrency(value, language)}</span>
-    </div>
-  );
-  
-  const SpecItem = ({label, value}) => (
-      <div className="customer-spec-item">
-        <span className="spec-label">{label}</span>
-        <span className="spec-value" style={{whiteSpace: 'pre-wrap'}}>{value}</span>
-      </div>
-  );
 
   return (
     <main className="container">
@@ -350,94 +496,24 @@ function App() {
 
         <button type="submit">{t(language, 'calculateBtn')}</button>
       </form>
-
-      {summary !== null && (
-        <section className="summary" aria-live="polite">
-            <div className="view-switcher">
-                <button className={summaryView === 'shop' ? 'active' : ''} onClick={() => setSummaryView('shop')}>{t(language, 'shopView')}</button>
-                <button className={summaryView === 'customer' ? 'active' : ''} onClick={() => setSummaryView('customer')}>{t(language, 'customerView')}</button>
-            </div>
-            {summaryView === 'shop' ? (
-                <>
-                    <h2>{t(language, 'costBreakdown')}</h2>
-                    <div className="summary-details">
-                        <SummaryItem label={t(language, 'materialCostLabel')} value={summary.materialCost} remarks={`${t(language, summary.material)} (${summary.grams || 0}${t(language, 'gramsUnit')})`}/>
-                        <SummaryItem label={t(language, 'cadCostLabel')} value={summary.cadCost} />
-                        <SummaryItem label={t(language, 'mainStoneLabel')} value={summary.mainStoneCost} remarks={summary.mainStoneRemarks}/>
-                        <SummaryItem label={t(language, 'sideStonesCostLabel')} value={summary.sideStonesCost} remarks={summary.sideStonesRemarks}/>
-                        <SummaryItem label={t(language, 'laborCostLabel')} value={summary.laborCost} />
-                    </div>
-                    <div className="summary-item summary-subtotal">
-                      <span>{t(language, 'subtotalLabel')}</span>
-                      <span>{formatCurrency(summary.subtotal, language)}</span>
-                    </div>
-                    <div className="summary-item">
-                      <span>{t(language, 'marginAmountLabel', { marginPercentage: summary.marginPercentage })}</span>
-                      <span>{formatCurrency(summary.marginAmount, language)}</span>
-                    </div>
-                    <div className="total-price-group">
-                        <label htmlFor="finalPrice">{t(language, 'totalShopLabel')}</label>
-                        <input
-                            id="finalPrice"
-                            type="number"
-                            value={finalPrice}
-                            onChange={(e) => setFinalPrice(e.target.value)}
-                            aria-label="Final Price"
-                            step={0.01}
-                        />
-                    </div>
-                </>
-            ) : (
-                <>
-                    <h2>{t(language, 'quotation')}</h2>
-                    <div className="customer-spec-list">
-                      {summary.jewelryType && <SpecItem label={t(language, 'jewelryTypeLabel')} value={t(language, summary.jewelryType)} />}
-                      <SpecItem label={t(language, 'materialLabel')} value={`${t(language, summary.material)}${summary.showGramsInQuote ? ` (${summary.grams || 0}${t(language, 'gramsUnit')})` : ''}`} />
-                      {summary.mainStoneRemarks && <SpecItem label={t(language, 'mainStoneLabel')} value={summary.mainStoneRemarks} />}
-                      {summary.sideStonesRemarks && <SpecItem label={t(language, 'sideStoneLabel')} value={summary.sideStonesRemarks.replace(/\n/g, ', ')} />}
-                    </div>
-                    <div className="total-price-group customer">
-                        <label htmlFor="finalPrice">{t(language, 'totalCustomerLabel')}</label>
-                        <input
-                            id="finalPrice"
-                            type="number"
-                            value={finalPrice}
-                            onChange={(e) => setFinalPrice(e.target.value)}
-                            aria-label="Final Price"
-                            step={0.01}
-                        />
-                    </div>
-                </>
-            )}
-
-            <div className="remarks-section">
-                <div className="form-group">
-                    <label htmlFor="remarksFactoryShop">{t(language, 'remarksForFactoryShopLabel')}</label>
-                    <textarea 
-                        id="remarksFactoryShop" 
-                        rows={3} 
-                        value={remarksForFactoryShop} 
-                        onChange={e => setRemarksForFactoryShop(e.target.value)}
-                    />
-                </div>
-                <div className="form-group">
-                    <label htmlFor="remarksCustomer">{t(language, 'remarksForCustomerLabel')}</label>
-                    <textarea 
-                        id="remarksCustomer" 
-                        rows={3} 
-                        value={remarksForCustomer} 
-                        onChange={e => setRemarksForCustomer(e.target.value)}
-                    />
-                </div>
-            </div>
-
-            <div className="download-grid">
-                <button type="button" className="download-btn shop" onClick={handleDownloadShopPDF}>{t(language, 'downloadShopPDF')}</button>
-                <button type="button" className="download-btn customer" onClick={handleDownloadCustomerPDF}>{t(language, 'downloadCustomerPDF')}</button>
-                <button type="button" className="download-btn factory" onClick={handleDownloadFactoryPDF}>{t(language, 'downloadFactoryPDF')}</button>
-            </div>
-        </section>
-      )}
+      
+      <SummaryModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          summary={summary}
+          summaryView={summaryView}
+          setSummaryView={setSummaryView}
+          finalPrice={finalPrice}
+          setFinalPrice={setFinalPrice}
+          remarksForFactoryShop={remarksForFactoryShop}
+          setRemarksForFactoryShop={setRemarksForFactoryShop}
+          remarksForCustomer={remarksForCustomer}
+          setRemarksForCustomer={setRemarksForCustomer}
+          handleDownloadShopPDF={handleDownloadShopPDF}
+          handleDownloadCustomerPDF={handleDownloadCustomerPDF}
+          handleDownloadFactoryPDF={handleDownloadFactoryPDF}
+          language={language}
+      />
     </main>
   );
 }
