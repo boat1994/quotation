@@ -10,9 +10,10 @@ import {
   diamondColors,
   diamondDetailKeys,
   getInitialStoneState,
+  jewelryTypeKeys,
 } from './constants.js';
 import { formatCurrency, calculateCosts } from './utils.js';
-import { generateShopPdf, generateCustomerPdf } from './pdf.js';
+import { generateShopPdf, generateCustomerPdf, generateFactoryPdf } from './pdf.js';
 import { t } from './i18n.js';
 
 interface ImageState {
@@ -44,7 +45,7 @@ const StoneInputGroup = ({ label, stone, onStoneChange, idPrefix, isSideStone = 
           onChange={(e) => handleInputChange('cost', e.target.value)}
           placeholder={t(lang, 'costPerStonePlaceholder')}
           aria-label={`${label} cost`}
-          step="0.01"
+          step={0.01}
         />
         {isSideStone && (
           <input
@@ -53,7 +54,7 @@ const StoneInputGroup = ({ label, stone, onStoneChange, idPrefix, isSideStone = 
             onChange={(e) => handleInputChange('quantity', e.target.value)}
             placeholder={t(lang, 'qtyPlaceholder')}
             aria-label={`${label} quantity`}
-            step="1"
+            step={1}
             min="1"
           />
         )}
@@ -67,7 +68,7 @@ const StoneInputGroup = ({ label, stone, onStoneChange, idPrefix, isSideStone = 
           <select value={stone.shape} onChange={(e) => handleInputChange('shape', e.target.value)} aria-label={`${label} Shape`}>
              {diamondShapeKeys.map(key => <option key={key} value={key}>{t(lang, key)}</option>)}
           </select>
-          <input type="number" value={stone.weight} onChange={(e) => handleInputChange('weight', e.target.value)} placeholder={t(lang, 'weightPlaceholder')} step="0.01" aria-label={`${label} Weight`}/>
+          <input type="number" value={stone.weight} onChange={(e) => handleInputChange('weight', e.target.value)} placeholder={t(lang, 'weightPlaceholder')} step={0.01} aria-label={`${label} Weight`}/>
           <select value={stone.color} onChange={(e) => handleInputChange('color', e.target.value)} aria-label={`${label} Color`}>
              {diamondColors.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
@@ -97,6 +98,7 @@ const StoneInputGroup = ({ label, stone, onStoneChange, idPrefix, isSideStone = 
 function App() {
   const [language, setLanguage] = useState('en');
   const [customerName, setCustomerName] = useState('');
+  const [jewelryType, setJewelryType] = useState('ring');
   const [material, setMaterial] = useState('silver925');
   const [grams, setGrams] = useState('');
   const [showGramsInQuote, setShowGramsInQuote] = useState(true);
@@ -113,6 +115,8 @@ function App() {
 
   const [summary, setSummary] = useState<ReturnType<typeof calculateCosts> | null>(null);
   const [finalPrice, setFinalPrice] = useState('');
+  const [remarksForFactoryShop, setRemarksForFactoryShop] = useState('');
+  const [remarksForCustomer, setRemarksForCustomer] = useState('');
 
 
   const handleAddSideStone = () => {
@@ -168,7 +172,7 @@ function App() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const summaryData = calculateCosts({
-        customerName, material, grams, showGramsInQuote, images, cadCost, laborCost, margin, mainStone, sideStones, language
+        customerName, jewelryType, images, material, grams, showGramsInQuote, cadCost, laborCost, margin, mainStone, sideStones, language
     });
     setSummary(summaryData);
     setFinalPrice(summaryData.totalPrice.toFixed(2));
@@ -176,14 +180,31 @@ function App() {
   
   const handleDownloadShopPDF = () => {
     if (!summary) return;
-    const updatedSummary = { ...summary, totalPrice: parseFloat(finalPrice) || summary.totalPrice };
-    generateShopPdf(updatedSummary, { material, grams }, language);
+    const updatedSummary = { 
+        ...summary, 
+        totalPrice: parseFloat(finalPrice) || summary.totalPrice,
+        remarksForFactoryShop,
+    };
+    generateShopPdf(updatedSummary, language);
   };
 
   const handleDownloadCustomerPDF = () => {
     if (!summary) return;
-    const updatedSummary = { ...summary, totalPrice: parseFloat(finalPrice) || summary.totalPrice };
-    generateCustomerPdf(updatedSummary, { material, grams }, language);
+    const updatedSummary = { 
+        ...summary, 
+        totalPrice: parseFloat(finalPrice) || summary.totalPrice,
+        remarksForCustomer,
+    };
+    generateCustomerPdf(updatedSummary, language);
+  };
+
+  const handleDownloadFactoryPDF = () => {
+    if (!summary) return;
+    const updatedSummary = {
+        ...summary,
+        remarksForFactoryShop,
+    };
+    generateFactoryPdf(updatedSummary, language);
   };
   
   const SummaryItem = ({ label, value, remarks = '' }) => (
@@ -223,6 +244,17 @@ function App() {
             aria-label="Customer Name"
           />
         </div>
+        
+        <div className="form-group">
+          <label htmlFor="jewelryType">{t(language, 'jewelryTypeLabel')}</label>
+          <select
+            id="jewelryType"
+            value={jewelryType}
+            onChange={(e) => setJewelryType(e.target.value)}
+          >
+            {jewelryTypeKeys.map(key => <option key={key} value={key}>{t(language, key)}</option>)}
+          </select>
+        </div>
 
         <div className="form-group">
           <label htmlFor="material">{t(language, 'materialLabel')}</label>
@@ -240,7 +272,7 @@ function App() {
               onChange={(e) => setGrams(e.target.value)}
               placeholder={t(language, 'gramsPlaceholder')}
               aria-label="Weight in grams"
-              step="0.01"
+              step={0.01}
             />
           </div>
           <div className="checkbox-group">
@@ -267,7 +299,7 @@ function App() {
             onChange={(e) => setCadCost(e.target.value)}
             placeholder={t(language, 'costPlaceholder')}
             aria-label="CAD cost"
-            step="0.01"
+            step={0.01}
           />
         </div>
 
@@ -299,7 +331,7 @@ function App() {
             onChange={(e) => setLaborCost(e.target.value)}
             placeholder={t(language, 'costPlaceholder')}
             aria-label="Labor cost"
-            step="0.01"
+            step={0.01}
           />
         </div>
         
@@ -312,7 +344,7 @@ function App() {
             onChange={(e) => setMargin(e.target.value)}
             placeholder={t(language, 'marginPlaceholder')}
             aria-label="Margin in percent"
-            step="1"
+            step={1}
           />
         </div>
 
@@ -329,7 +361,7 @@ function App() {
                 <>
                     <h2>{t(language, 'costBreakdown')}</h2>
                     <div className="summary-details">
-                        <SummaryItem label={t(language, 'materialCostLabel')} value={summary.materialCost} remarks={`${t(language, material)} (${grams || 0}${t(language, 'gramsUnit')})`}/>
+                        <SummaryItem label={t(language, 'materialCostLabel')} value={summary.materialCost} remarks={`${t(language, summary.material)} (${summary.grams || 0}${t(language, 'gramsUnit')})`}/>
                         <SummaryItem label={t(language, 'cadCostLabel')} value={summary.cadCost} />
                         <SummaryItem label={t(language, 'mainStoneLabel')} value={summary.mainStoneCost} remarks={summary.mainStoneRemarks}/>
                         <SummaryItem label={t(language, 'sideStonesCostLabel')} value={summary.sideStonesCost} remarks={summary.sideStonesRemarks}/>
@@ -351,7 +383,7 @@ function App() {
                             value={finalPrice}
                             onChange={(e) => setFinalPrice(e.target.value)}
                             aria-label="Final Price"
-                            step="0.01"
+                            step={0.01}
                         />
                     </div>
                 </>
@@ -359,7 +391,8 @@ function App() {
                 <>
                     <h2>{t(language, 'quotation')}</h2>
                     <div className="customer-spec-list">
-                      <SpecItem label={t(language, 'materialLabel')} value={`${t(language, material)}${summary.showGramsInQuote ? ` (${grams || 0}${t(language, 'gramsUnit')})` : ''}`} />
+                      {summary.jewelryType && <SpecItem label={t(language, 'jewelryTypeLabel')} value={t(language, summary.jewelryType)} />}
+                      <SpecItem label={t(language, 'materialLabel')} value={`${t(language, summary.material)}${summary.showGramsInQuote ? ` (${summary.grams || 0}${t(language, 'gramsUnit')})` : ''}`} />
                       {summary.mainStoneRemarks && <SpecItem label={t(language, 'mainStoneLabel')} value={summary.mainStoneRemarks} />}
                       {summary.sideStonesRemarks && <SpecItem label={t(language, 'sideStoneLabel')} value={summary.sideStonesRemarks.replace(/\n/g, ', ')} />}
                     </div>
@@ -371,14 +404,37 @@ function App() {
                             value={finalPrice}
                             onChange={(e) => setFinalPrice(e.target.value)}
                             aria-label="Final Price"
-                            step="0.01"
+                            step={0.01}
                         />
                     </div>
                 </>
             )}
+
+            <div className="remarks-section">
+                <div className="form-group">
+                    <label htmlFor="remarksFactoryShop">{t(language, 'remarksForFactoryShopLabel')}</label>
+                    <textarea 
+                        id="remarksFactoryShop" 
+                        rows={3} 
+                        value={remarksForFactoryShop} 
+                        onChange={e => setRemarksForFactoryShop(e.target.value)}
+                    />
+                </div>
+                <div className="form-group">
+                    <label htmlFor="remarksCustomer">{t(language, 'remarksForCustomerLabel')}</label>
+                    <textarea 
+                        id="remarksCustomer" 
+                        rows={3} 
+                        value={remarksForCustomer} 
+                        onChange={e => setRemarksForCustomer(e.target.value)}
+                    />
+                </div>
+            </div>
+
             <div className="download-grid">
                 <button type="button" className="download-btn shop" onClick={handleDownloadShopPDF}>{t(language, 'downloadShopPDF')}</button>
                 <button type="button" className="download-btn customer" onClick={handleDownloadCustomerPDF}>{t(language, 'downloadCustomerPDF')}</button>
+                <button type="button" className="download-btn factory" onClick={handleDownloadFactoryPDF}>{t(language, 'downloadFactoryPDF')}</button>
             </div>
         </section>
       )}

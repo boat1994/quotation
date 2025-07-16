@@ -29,6 +29,7 @@ export const getStoneRemarks = (stone, lang = 'en') => {
 
 export const calculateCosts = ({
   customerName,
+  jewelryType,
   images,
   material,
   grams,
@@ -62,6 +63,7 @@ export const calculateCosts = ({
 
     return {
       customerName,
+      jewelryType,
       images,
       material,
       grams,
