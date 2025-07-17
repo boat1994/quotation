@@ -1,10 +1,10 @@
 
 export const materialPrices = {
-  silver925: 50,
-  gold9k: 1300,
-  gold14k: 2100,
-  gold18k: 2600,
-  pt950: 1790,
+  silver925: 100,
+  gold9k: 1500,
+  gold14k: 2300,
+  gold18k: 2800,
+  pt950: 1890,
 };
 
 export const materialKeys = ['silver925', 'gold9k', 'gold14k', 'gold18k', 'pt950'];
