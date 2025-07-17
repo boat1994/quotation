@@ -1,4 +1,5 @@
 
+
 /* Modal styles */
 .modal-overlay {
     position: fixed;
@@ -315,8 +316,37 @@
   color: var(--primary-color);
 }
 
+.trello-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    align-items: flex-end;
+    margin-bottom: 1rem;
+}
+
+@media (max-width: 600px) {
+  .trello-controls {
+    grid-template-columns: 1fr;
+  }
+}
+
+#trelloPin {
+    letter-spacing: 0.3em;
+    text-align: center;
+}
+input[type="password"].error {
+    border-color: var(--danger-color);
+    animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+}
+.trello-pin-error {
+    color: var(--danger-color);
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+}
+
 .download-btn.trello {
   margin-top: 1rem;
+  width: 100%;
   background-color: #0079BF; /* Trello blue */
   border-color: #0079BF;
   color: white;
@@ -336,4 +366,12 @@
   font-size: 0.9rem;
   margin-top: 0.5rem;
   color: #a0a0a0;
+}
+
+
+@keyframes shake {
+  10%, 90% { transform: translateX(-1px); }
+  20%, 80% { transform: translateX(2px); }
+  30%, 50%, 70% { transform: translateX(-4px); }
+  40%, 60% { transform: translateX(4px); }
 }

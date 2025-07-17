@@ -11,6 +11,7 @@ import {
   jewelryTypeKeys,
   colorableMaterialKeys,
   materialColorKeys,
+  CORRECT_PIN,
 } from '../../constants.js';
 import { calculateCosts } from '../../utils.js';
 import { t } from '../../i18n.js';
@@ -53,7 +54,7 @@ function App() {
   const [config, setConfig] = useState({
     materialPrices: defaultMaterialPrices,
     settingCosts: defaultSettingCosts,
-    trelloApiKey: '',
+    trelloApiKey: 'eef5180b694a3948658d373b0cbe9ddf',
     trelloApiToken: '',
     trelloBoardId: '',
   });
@@ -61,7 +62,6 @@ function App() {
   const [isLocked, setIsLocked] = useState(true);
   const [pinInput, setPinInput] = useState('');
   const [pinError, setPinError] = useState(false);
-  const CORRECT_PIN = '151515';
 
   const [mainStone, setMainStone] = useState<Stone>(getInitialStoneState());
   const [sideStones, setSideStones] = useState<Stone[]>([]);

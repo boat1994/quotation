@@ -86,6 +86,8 @@ export const translations = {
     trelloCardCreated: 'Card Created!',
     trelloCreationFailed: 'Creation Failed.',
     trelloErrorFetching: 'Error fetching lists.',
+    pinIncorrect: 'Incorrect PIN',
+    tryAgainLater: 'Try again later...',
 
     // PDF
     shopPdfTitle: 'Quotation (For Shop)',
@@ -291,6 +293,8 @@ export const translations = {
     trelloCardCreated: 'สร้างการ์ดแล้ว!',
     trelloCreationFailed: 'สร้างไม่สำเร็จ',
     trelloErrorFetching: 'ดึงข้อมูลลิสต์ไม่ได้',
+    pinIncorrect: 'PIN ไม่ถูกต้อง',
+    tryAgainLater: 'ลองใหม่อีกครั้ง...',
     
     // PDF
     shopPdfTitle: 'ใบเสนอราคา (สำหรับร้านค้า)',

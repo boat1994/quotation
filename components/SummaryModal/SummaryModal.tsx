@@ -1,9 +1,10 @@
 
 
-import React, { useEffect, useLayoutEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { formatCurrency } from '../../utils.js';
 import { t } from '../../i18n.js';
 import { generateShopPdf, generateCustomerPdf, generateFactoryPdf } from '../../pdf.js';
+import { CORRECT_PIN } from '../../constants.js';
 import './SummaryModal.css';
 
 const SummaryItem = ({ label, value, remarks = '', lang }) => (
@@ -51,12 +52,18 @@ const SummaryModal = ({
     language,
     config,
 }) => {
+    const modalContentRef = useRef<HTMLDivElement>(null);
     const [trelloLists, setTrelloLists] = useState([]);
     const [selectedTrelloListId, setSelectedTrelloListId] = useState('');
     const [trelloStatus, setTrelloStatus] = useState({ loading: false, message: '' });
+    const [trelloPin, setTrelloPin] = useState('');
+    const [trelloPinError, setTrelloPinError] = useState(false);
 
     useLayoutEffect(() => {
         if (isOpen) {
+            if (modalContentRef.current) {
+                modalContentRef.current.scrollTo(0, 0);
+            }
             const originalStyle = window.getComputedStyle(document.body).overflow;
             document.body.style.overflow = 'hidden';
             
@@ -123,7 +130,7 @@ const SummaryModal = ({
         downloadBlob(blob, t(language, 'factoryPdfFilename'));
     };
     
-    const handleCreateTrelloCard = async () => {
+    const executeCreateTrelloCard = async () => {
         if (!summary || !selectedTrelloListId) return;
     
         setTrelloStatus({ loading: true, message: t(language, 'creatingTrelloCard') });
@@ -174,7 +181,10 @@ const SummaryModal = ({
         
         const dataURLtoBlob = (dataurl) => {
             const arr = dataurl.split(',');
-            const mime = arr[0].match(/:(.*?);/)[1];
+            if (arr.length < 2) return null;
+            const mimeMatch = arr[0].match(/:(.*?);/);
+            if (!mimeMatch) return null;
+            const mime = mimeMatch[1];
             const bstr = atob(arr[1]);
             let n = bstr.length;
             const u8arr = new Uint8Array(n);
@@ -232,6 +242,24 @@ const SummaryModal = ({
         }
     };
 
+    const handleAttemptCreateTrelloCard = () => {
+        if (trelloStatus.loading) return;
+        if (trelloPin === CORRECT_PIN) {
+            setTrelloPinError(false);
+            setTrelloPin(''); // Reset PIN on success
+            executeCreateTrelloCard();
+        } else {
+            setTrelloPinError(true);
+            setTrelloPin(''); // Reset PIN on failure
+            setTrelloStatus({ loading: true, message: t(language, 'tryAgainLater') });
+            setTimeout(() => {
+                setTrelloPinError(false);
+                setTrelloStatus({ loading: false, message: '' });
+            }, 2000);
+        }
+    };
+
+
     if (!isOpen || !summary) {
         return null;
     }
@@ -240,7 +268,7 @@ const SummaryModal = ({
 
     return (
         <div className="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="summary-heading" onClick={onClose}>
-            <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <div ref={modalContentRef} className="modal-content" onClick={e => e.stopPropagation()}>
                 <div className="summary">
                     <div className="view-switcher">
                         <button className={summaryView === 'shop' ? 'active' : ''} onClick={() => setSummaryView('shop')}>{t(language, 'shopView')}</button>
@@ -326,24 +354,39 @@ const SummaryModal = ({
                     {summaryView === 'shop' && trelloConfigured && (
                         <div className="trello-section">
                             <h4>{t(language, 'trelloIntegration')}</h4>
-                            <div className="form-group">
-                                <label htmlFor="trelloList">{t(language, 'trelloList')}</label>
-                                <select 
-                                    id="trelloList"
-                                    value={selectedTrelloListId} 
-                                    onChange={e => setSelectedTrelloListId(e.target.value)}
-                                    disabled={trelloStatus.loading || trelloLists.length === 0}
-                                >
-                                    {trelloLists.length === 0 && <option>{trelloStatus.loading ? 'Loading...' : (trelloStatus.message || 'No lists found')}</option>}
-                                    {trelloLists.map(list => (
-                                        <option key={list.id} value={list.id}>{list.name}</option>
-                                    ))}
-                                </select>
+                            <div className="trello-controls">
+                                <div className="form-group">
+                                    <label htmlFor="trelloPin">PIN</label>
+                                    <input
+                                        id="trelloPin"
+                                        type="password"
+                                        inputMode="numeric"
+                                        value={trelloPin}
+                                        onChange={e => setTrelloPin(e.target.value)}
+                                        className={trelloPinError ? 'error' : ''}
+                                        maxLength={6}
+                                    />
+                                    {trelloPinError && <span className="trello-pin-error">{t(language, 'pinIncorrect')}</span>}
+                                </div>
+                                <div className="form-group">
+                                    <label htmlFor="trelloList">{t(language, 'trelloList')}</label>
+                                    <select 
+                                        id="trelloList"
+                                        value={selectedTrelloListId} 
+                                        onChange={e => setSelectedTrelloListId(e.target.value)}
+                                        disabled={trelloStatus.loading || trelloLists.length === 0}
+                                    >
+                                        {trelloLists.length === 0 && <option>{trelloStatus.loading ? 'Loading...' : (trelloStatus.message || 'No lists found')}</option>}
+                                        {trelloLists.map(list => (
+                                            <option key={list.id} value={list.id}>{list.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
                             </div>
                             <button 
                                 type="button" 
                                 className="download-btn trello" 
-                                onClick={handleCreateTrelloCard} 
+                                onClick={handleAttemptCreateTrelloCard} 
                                 disabled={trelloStatus.loading || !selectedTrelloListId}
                             >
                                 {trelloStatus.loading ? trelloStatus.message : (trelloStatus.message && trelloStatus.message !== t(language, 'trelloErrorFetching') ? trelloStatus.message : t(language, 'createTrelloCard'))}
