@@ -58,6 +58,8 @@ const SummaryModal = ({
     handleDownloadShopPDF,
     handleDownloadCustomerPDF,
     handleDownloadFactoryPDF,
+    handleCopyToClipboard,
+    isCopied,
     language,
 }) => {
     // Scroll locking effect
@@ -183,10 +185,31 @@ const SummaryModal = ({
                             />
                         </div>
                     </div>
-
+                    
                     <div className="download-grid">
-                        <button type="button" className="download-btn customer" onClick={handleDownloadCustomerPDF}>{t(language, 'downloadCustomerPDF')}</button>
-                        <button type="button" className="download-btn factory" onClick={handleDownloadFactoryPDF}>{t(language, 'downloadFactoryPDF')}</button>
+                        {summaryView === 'shop' ? (
+                            <>
+                           <button type="button" className="download-btn customer" onClick={handleDownloadCustomerPDF}><span>{t(language, 'downloadCustomerPDF')}</span></button>
+                                <button type="button" className="download-btn factory" onClick={handleDownloadFactoryPDF}><span>{t(language, 'downloadFactoryPDF')}</span></button>
+                            </>
+                        ) : (
+                            <>
+                                <button type="button" className="download-btn customer" onClick={handleDownloadCustomerPDF}><span>{t(language, 'downloadCustomerPDF')}</span></button>
+                                <button type="button" className="download-btn copy" onClick={handleCopyToClipboard} disabled={isCopied}>
+                                    {isCopied ? (
+                                        <>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                            <span>{t(language, 'copiedLabel')}</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+                                            <span>{t(language, 'copyForChat')}</span>
+                                        </>
+                                    )}
+                                </button>
+                            </>
+                        )}
                     </div>
                 </div>
             </div>
@@ -430,6 +453,7 @@ function App() {
   const [summaryView, setSummaryView] = useState('shop');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPreferencesOpen, setIsPreferencesOpen] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
   const [config, setConfig] = useState({
     materialPrices: defaultMaterialPrices,
     settingCosts: defaultSettingCosts,
@@ -554,6 +578,75 @@ function App() {
     };
     generateFactoryPdf(updatedSummary, language);
   };
+
+  const handleCopyToClipboard = () => {
+    if (!summary) return;
+
+    const price = parseFloat(finalPrice) || 0;
+    const deposit = price / 2;
+
+    const formatForCopy = (value) => {
+        const numberLocale = language === 'th' ? 'th-TH' : 'en-US';
+        return value.toLocaleString(numberLocale, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+        });
+    };
+
+    const parts = [];
+    const customer = summary.customerName || '';
+    
+    parts.push(t(language, 'copy_greeting_v2', { jewelryType: t(language, summary.jewelryType) }));
+    parts.push('');
+    parts.push(t(language, 'copy_details_header_v2'));
+    
+    if (summary.mainStoneRemarks) {
+        parts.push(t(language, 'copy_main_stone_line_v2', { mainStoneRemarks: summary.mainStoneRemarks }));
+    }
+    if (summary.sideStonesRemarks) {
+        const sideStonesLines = summary.sideStonesRemarks.split('\n');
+        sideStonesLines.forEach(line => {
+            if (line.trim()) {
+                parts.push(t(language, 'copy_side_stones_line_v2', { sideStonesRemarks: line }));
+            }
+        });
+    }
+    parts.push(t(language, 'copy_body_line_v2', { material: t(language, summary.material) }));
+    parts.push('');
+
+    const finalPriceString = formatForCopy(price);
+    const depositString = formatForCopy(deposit);
+
+    parts.push(t(language, 'copy_total_line_v2', { finalPrice: finalPriceString }));
+    parts.push('');
+    
+    const depositInfo = t(language, 'copy_deposit_info_v2', { customerName: customer, depositAmount: depositString });
+    parts.push(...depositInfo.split('\n'));
+    
+    parts.push('');
+    parts.push(t(language, 'copy_payment_header_v2'));
+    parts.push('');
+    parts.push(t(language, 'copy_payment_details_v2'));
+    parts.push('');
+    parts.push(t(language, 'copy_post_payment_info_v2'));
+    parts.push('');
+    parts.push(t(language, 'copy_cancellation_header_v2'));
+    parts.push(t(language, 'copy_cancellation_info_v2'));
+    parts.push('');
+    parts.push(t(language, 'copy_closing_v2'));
+    
+    const textToCopy = parts.join('\n');
+    
+    navigator.clipboard.writeText(textToCopy)
+      .then(() => {
+        setIsCopied(true);
+        setTimeout(() => setIsCopied(false), 2000);
+      })
+      .catch(err => {
+        console.error('Failed to copy text: ', err);
+      });
+  };
+
 
   const handleFinalPriceChange = (newPriceStr: string) => {
     setFinalPrice(newPriceStr);
@@ -739,6 +832,8 @@ function App() {
           handleDownloadShopPDF={handleDownloadShopPDF}
           handleDownloadCustomerPDF={handleDownloadCustomerPDF}
           handleDownloadFactoryPDF={handleDownloadFactoryPDF}
+          handleCopyToClipboard={handleCopyToClipboard}
+          isCopied={isCopied}
           language={language}
       />
 
