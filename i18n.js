@@ -1,5 +1,6 @@
 
 
+
 export const translations = {
   en: {
     // App
@@ -8,7 +9,9 @@ export const translations = {
     // Form Labels
     customerNameLabel: 'Customer Name',
     jewelryTypeLabel: 'Jewelry Type',
+    sizeLabel: 'Size',
     materialLabel: 'Material',
+    materialColorLabel: 'Material Color',
     gramsVisibilityLabel: 'Grams in Customer Quotation',
     refImagesLabel: 'Reference Images (up to 5)',
     cadCostLabel: 'CAD Cost',
@@ -83,6 +86,7 @@ export const translations = {
     pdfRefImagesTitle: 'Reference Images',
     pdfRefImagesTitleCont: 'Reference Images (cont.)',
     pdfJewelryTypeLabel: 'Jewelry Type:',
+    pdfSizeLabel: 'Size:',
     pdfMaterialLabel: 'Material:',
     pdfMainStoneLabel: 'Main Stone:',
     pdfSideStoneLabel: 'Side Stones:',
@@ -118,6 +122,7 @@ export const translations = {
     // Copy for chat v2
     copy_greeting_v2: 'I would like to send a summary of the details for your special {jewelryType}.',
     copy_details_header_v2: 'Workpiece Details:',
+    copy_size_line_v2: '- Size: {sizeDetails}',
     copy_main_stone_line_v2: '- Main Stone: {mainStoneRemarks}',
     copy_side_stones_line_v2: '- Side Stones: {sideStonesRemarks}',
     copy_body_line_v2: '- Setting: {material}',
@@ -134,6 +139,7 @@ export const translations = {
     // Units
     gramsUnit: 'g',
     mmUnit: 'mm',
+    cmUnit: 'cm',
 
     // Jewelry Types
     ring: 'Ring',
@@ -141,6 +147,12 @@ export const translations = {
     necklace: 'Necklace',
     earring: 'Earring',
     pendant: 'Pendant',
+    
+    // Earring Sizes
+    s: 'S (3-5mm)',
+    m: 'M (6-10mm)',
+    l: 'L (11-15mm)',
+    xl: 'XL (16-20mm)',
 
     // Materials
     silver925: 'Silver 925',
@@ -148,6 +160,9 @@ export const translations = {
     gold14k: 'Gold 14k',
     gold18k: 'Gold 18k',
     pt950: 'Platinum 950',
+    yellowGold: 'Yellow Gold',
+    whiteGold: 'White Gold',
+    roseGold: 'Rose Gold',
 
     // Diamond Shapes
     round: 'Round Cut',
@@ -161,6 +176,9 @@ export const translations = {
     // Diamond Details (Cut, Clarity, Polish)
     EX: 'Excellent',
     VG: 'Very Good',
+    VVS: 'VVS',
+    VS: 'VS',
+    SI: 'SI',
 
     // Stone remarks parts
     shapeLabel: 'Shape',
@@ -180,7 +198,9 @@ export const translations = {
     // Form Labels
     customerNameLabel: 'ชื่อลูกค้า',
     jewelryTypeLabel: 'ประเภทเครื่องประดับ',
+    sizeLabel: 'ขนาด',
     materialLabel: 'วัสดุ',
+    materialColorLabel: 'สีวัสดุ',
     gramsVisibilityLabel: 'น้ำหนักในใบเสนอราคา',
     refImagesLabel: 'รูปภาพอ้างอิง (สูงสุด 5 รูป)',
     cadCostLabel: 'ค่าออกแบบสามมิติ',
@@ -255,6 +275,7 @@ export const translations = {
     pdfRefImagesTitle: 'รูปภาพอ้างอิง',
     pdfRefImagesTitleCont: 'รูปภาพอ้างอิง',
     pdfJewelryTypeLabel: 'ประเภทเครื่องประดับ:',
+    pdfSizeLabel: 'ขนาด:',
     pdfMaterialLabel: 'วัสดุ:',
     pdfMainStoneLabel: 'Main stone:',
     pdfSideStoneLabel: 'Side stones:',
@@ -290,13 +311,14 @@ export const translations = {
     // Copy for chat v2
     copy_greeting_v2: 'ผมขออนุญาตส่งสรุปรายละเอียดสำหรับ{jewelryType}วงพิเศษนะครับ',
     copy_details_header_v2: 'รายละเอียดชิ้นงาน:',
+    copy_size_line_v2: '- ขนาด: {sizeDetails}',
     copy_main_stone_line_v2: '- เพชรเม็ดหลัก: {mainStoneRemarks}',
     copy_side_stones_line_v2: '- เพชรข้าง: {sideStonesRemarks}',
     copy_body_line_v2: '- ตัวเรือน: {material}',
     copy_total_line_v2: 'ยอดรวมสุทธิ: {finalPrice} บาท',
     copy_deposit_info_v2: 'หากคุณ{customerName}คอนเฟิร์มสั่งผลิต\n🙏🏻ชำระมัดจำ 50% = {depositAmount} บาท🙏🏻\nเพื่อเริ่มงานได้เลยครับ',
     copy_payment_header_v2: 'ช่องทางการชำระเงิน:',
-    copy_payment_details_v2: 'ชื่อบัญชี: นาย ดุลวัฒน์ แสนสุริวงค์\nธนาคาร: กสิกรไทย\nเลขที่: 142-3-96854-7',
+    copy_payment_details_v2: 'ชื่อบัญชี: นาย ดลวัฒน์ แสนสุริวงค์\nธนาคาร: กสิกรไทย\nเลขที่: 142-3-96854-7',
     copy_post_payment_info_v2: 'หลังจากผมได้รับยอดมัดจำแล้ว จะรีบเริ่มกระบวนการผลิตทันที ซึ่งจะใช้เวลาประมาณ 14-21 วันทำการ เพื่อสร้างสรรค์ผลงานชิ้นนี้อย่างสุดฝีมือเลยครับ',
     copy_cancellation_header_v2: 'รบกวนนิดนึงนะครับ:',
     copy_cancellation_info_v2: 'เนื่องจากเป็นสินค้าสั่งทำพิเศษ (Made-to-Order) ทางเราขอสงวนสิทธิ์ไม่รับยกเลิกหรือคืนสินค้าหลังจากที่ยืนยันการผลิตแล้วนะครับ',
@@ -305,6 +327,7 @@ export const translations = {
     // Units
     gramsUnit: 'ก',
     mmUnit: 'มม.',
+    cmUnit: 'ซม.',
     
     // Jewelry Types
     ring: 'แหวน',
@@ -313,12 +336,21 @@ export const translations = {
     earring: 'ต่างหู',
     pendant: 'จี้',
 
+    // Earring Sizes
+    s: 'S (3-5มม.)',
+    m: 'M (6-10มม.)',
+    l: 'L (11-15มม.)',
+    xl: 'XL (16-20มม.)',
+
     // Materials
     silver925: 'เงิน 925',
     gold9k: 'ทอง 9k',
     gold14k: 'ทอง 14k',
     gold18k: 'ทอง 18k',
     pt950: 'แพลทินัม 950',
+    yellowGold: 'ทองคำ',
+    whiteGold: 'ทองคำขาว',
+    roseGold: 'โรสโกลด์',
     
     // Diamond Shapes
     round: 'เพชรทรงกลม',
@@ -332,6 +364,9 @@ export const translations = {
     // Diamond Details (Cut, Clarity, Polish)
     EX: 'EX',
     VG: 'VG',
+    VVS: 'VVS',
+    VS: 'VS',
+    SI: 'SI',
     
     // Stone remarks parts
     shapeLabel: 'รูปทรง',

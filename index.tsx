@@ -9,11 +9,15 @@ import {
   diamondShapeKeys,
   diamondColors,
   diamondDetailKeys,
+  diamondClarityKeys,
   getInitialStoneState,
   jewelryTypeKeys,
   diamondConversionTableLimited,
   defaultMaterialPrices,
   defaultSettingCosts,
+  colorableMaterialKeys,
+  materialColorKeys,
+  earringSizeKeys,
 } from './constants.js';
 import { formatCurrency, calculateCosts } from './utils.js';
 import { generateShopPdf, generateCustomerPdf, generateFactoryPdf } from './pdf.js';
@@ -112,7 +116,7 @@ const SummaryModal = ({
                         <>
                             <h2 id="summary-heading">{t(language, 'costBreakdown')}</h2>
                             <div className="summary-details">
-                                <SummaryItem lang={language} label={t(language, 'materialPricePerGramLabel')} value={summary.materialPricePerGram} remarks={t(language, summary.material)}/>
+                                <SummaryItem lang={language} label={t(language, 'materialPricePerGramLabel')} value={summary.materialPricePerGram} remarks={summary.fullMaterialName}/>
                                 <SummaryItem lang={language} label={t(language, 'totalMaterialCostLabel')} value={summary.materialCost} remarks={`(${summary.grams || 0}${t(language, 'gramsUnit')}) ${t(language, 'lossLabel')}`}/>
                                 <SummaryItem lang={language} label={t(language, 'cadCostLabel')} value={summary.cadCost} />
                                 <SummaryItem lang={language} label={t(language, 'mainStoneLabel')} value={summary.mainStoneCost} remarks={summary.mainStoneRemarks}/>
@@ -146,9 +150,10 @@ const SummaryModal = ({
                             <h2 id="summary-heading">{t(language, 'quotation')}</h2>
                             <div className="customer-spec-list">
                               {summary.jewelryType && <SpecItem label={t(language, 'jewelryTypeLabel')} value={t(language, summary.jewelryType)} />}
-                              <SpecItem label={t(language, 'materialLabel')} value={`${t(language, summary.material)}${summary.showGramsInQuote ? ` (${summary.grams || 0}${t(language, 'gramsUnit')})` : ''}`} />
+                              {summary.sizeDetails && <SpecItem label={t(language, 'sizeLabel')} value={summary.sizeDetails} />}
+                              <SpecItem label={t(language, 'materialLabel')} value={`${summary.fullMaterialName}${summary.showGramsInQuote ? ` (${summary.grams || 0}${t(language, 'gramsUnit')})` : ''}`} />
                               {summary.mainStoneRemarks && <SpecItem label={t(language, 'mainStoneLabel')} value={summary.mainStoneRemarks} />}
-                              {summary.sideStonesRemarks && <SpecItem label={t(language, 'sideStoneLabel')} value={summary.sideStonesRemarks.replace(/\n/g, ', ')} />}
+                              {summary.sideStonesRemarks && <SpecItem label={t(language, 'sideStoneLabel')} value={summary.sideStonesRemarks} />}
                             </div>
                             <div className="total-price-group customer">
                                 <label htmlFor="finalPrice">{t(language, 'totalCustomerLabel')}</label>
@@ -393,7 +398,7 @@ const StoneInputGroup = ({ label, stone, onStoneChange, idPrefix, isSideStone = 
           <div className="details-item">
             <label htmlFor={`${idPrefix}Clarity`}>{t(lang, 'clarity')}</label>
             <select id={`${idPrefix}Clarity`} value={stone.clarity} onChange={(e) => handleInputChange('clarity', e.target.value)}>
-               {diamondDetailKeys.map(key => <option key={key} value={key}>{t(lang, key)}</option>)}
+               {diamondClarityKeys.map(key => <option key={key} value={key}>{t(lang, key)}</option>)}
             </select>
           </div>
           <div className="details-item">
@@ -430,7 +435,7 @@ const StoneInputGroup = ({ label, stone, onStoneChange, idPrefix, isSideStone = 
           <div className="details-item">
             <label htmlFor={`${idPrefix}ClarityDiameter`}>{t(lang, 'clarity')}</label>
             <select id={`${idPrefix}ClarityDiameter`} value={stone.clarity} onChange={(e) => handleDiameterModeChange('clarity', e.target.value)} aria-label={`${label} Clarity`}>
-               {diamondDetailKeys.map(key => <option key={key} value={key}>{t(lang, key)}</option>)}
+               {diamondClarityKeys.map(key => <option key={key} value={key}>{t(lang, key)}</option>)}
             </select>
           </div>
         </div>
@@ -439,11 +444,48 @@ const StoneInputGroup = ({ label, stone, onStoneChange, idPrefix, isSideStone = 
   );
 };
 
+const SizeInput = ({ jewelryType, size, onSizeChange, lang }) => {
+    if (jewelryType === 'pendant') {
+        return null;
+    }
+
+    const handleInputChange = (e) => onSizeChange(e.target.value);
+
+    let inputField;
+    const inputId = `sizeInput-${jewelryType}`;
+
+    if (jewelryType === 'earring') {
+        inputField = (
+            <select id={inputId} value={size} onChange={handleInputChange}>
+                {earringSizeKeys.map(key => <option key={key} value={key}>{t(lang, key)}</option>)}
+            </select>
+        );
+    } else {
+        const unit = jewelryType === 'ring' ? t(lang, 'mmUnit') : t(lang, 'cmUnit');
+        inputField = (
+            <div className="size-grid-group">
+                <input id={inputId} type="number" value={size} onChange={handleInputChange} step="0.1" inputMode="decimal" />
+                <span className="size-unit-label">{unit}</span>
+            </div>
+        );
+    }
+
+    return (
+        <div className="form-group">
+            <label htmlFor={inputId}>{t(lang, 'sizeLabel')}</label>
+            {inputField}
+        </div>
+    );
+};
+
+
 function App() {
   const [language, setLanguage] = useState('th');
   const [customerName, setCustomerName] = useState('');
   const [jewelryType, setJewelryType] = useState('ring');
-  const [material, setMaterial] = useState('silver925');
+  const [size, setSize] = useState('');
+  const [material, setMaterial] = useState('gold14k');
+  const [materialColor, setMaterialColor] = useState('yellowGold');
   const [grams, setGrams] = useState('');
   const [showGramsInQuote, setShowGramsInQuote] = useState(true);
   const [images, setImages] = useState<ImageState[]>([]);
@@ -538,10 +580,20 @@ function App() {
     }
   };
 
+  const handleJewelryTypeChange = (e) => {
+    const newType = e.target.value;
+    setJewelryType(newType);
+    if (newType === 'earring') {
+        setSize('s');
+    } else {
+        setSize('');
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const summaryData = calculateCosts({
-        customerName, jewelryType, images, material, grams, showGramsInQuote, cadCost, laborCost, margin, mainStone, sideStones, language,
+        customerName, jewelryType, size, images, material, materialColor, grams, showGramsInQuote, cadCost, laborCost, margin, mainStone, sideStones, language,
         materialPrices: config.materialPrices,
         settingCosts: config.settingCosts,
     });
@@ -600,18 +652,21 @@ function App() {
     parts.push('');
     parts.push(t(language, 'copy_details_header_v2'));
     
-    if (summary.mainStoneRemarks) {
-        parts.push(t(language, 'copy_main_stone_line_v2', { mainStoneRemarks: summary.mainStoneRemarks }));
+    if (summary.sizeDetails) {
+        parts.push(t(language, 'copy_size_line_v2', { sizeDetails: summary.sizeDetails }));
     }
-    if (summary.sideStonesRemarks) {
-        const sideStonesLines = summary.sideStonesRemarks.split('\n');
+    if (summary.mainStoneRemarksForCopy) {
+        parts.push(t(language, 'copy_main_stone_line_v2', { mainStoneRemarks: summary.mainStoneRemarksForCopy }));
+    }
+    if (summary.sideStonesRemarksForCopy) {
+        const sideStonesLines = summary.sideStonesRemarksForCopy.split('\n');
         sideStonesLines.forEach(line => {
             if (line.trim()) {
                 parts.push(t(language, 'copy_side_stones_line_v2', { sideStonesRemarks: line }));
             }
         });
     }
-    parts.push(t(language, 'copy_body_line_v2', { material: t(language, summary.material) }));
+    parts.push(t(language, 'copy_body_line_v2', { material: summary.fullMaterialName }));
     parts.push('');
 
     const finalPriceString = formatForCopy(price);
@@ -703,11 +758,13 @@ function App() {
           <select
             id="jewelryType"
             value={jewelryType}
-            onChange={(e) => setJewelryType(e.target.value)}
+            onChange={handleJewelryTypeChange}
           >
             {jewelryTypeKeys.map(key => <option key={key} value={key}>{t(language, key)}</option>)}
           </select>
         </div>
+
+        <SizeInput jewelryType={jewelryType} size={size} onSizeChange={setSize} lang={language} />
 
         <div className="form-group">
           <label htmlFor="material">{t(language, 'materialLabel')}</label>
@@ -729,6 +786,19 @@ function App() {
               inputMode="decimal"
             />
           </div>
+          {colorableMaterialKeys.includes(material) && (
+            <div className="material-color-options">
+                <label className="radio-group-label">{t(language, 'materialColorLabel')}</label>
+                <div className="radio-options-wrapper">
+                    {materialColorKeys.map(key => (
+                        <div key={key} className="radio-option">
+                            <input type="radio" id={`color-${key}`} name="materialColor" value={key} checked={materialColor === key} onChange={e => setMaterialColor(e.target.value)} />
+                            <label htmlFor={`color-${key}`}>{t(language, key)}</label>
+                        </div>
+                    ))}
+                </div>
+            </div>
+          )}
           <div className="radio-container">
             <label className="radio-group-label">{t(language, 'gramsVisibilityLabel')}</label>
             <div className="radio-options-wrapper">

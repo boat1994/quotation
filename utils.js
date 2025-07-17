@@ -1,6 +1,6 @@
 
 
-import { diamondConversionTableLimited } from './constants.js';
+import { diamondConversionTableLimited, colorableMaterialKeys } from './constants.js';
 import { t } from './i18n.js';
 
 export const formatCurrency = (value, lang = 'en') =>
@@ -48,11 +48,36 @@ export const getStoneRemarks = (stone, lang = 'en') => {
     return stone.manualRemarks ? `${stone.manualRemarks}${qtyText}` : '';
 };
 
+export const getStoneRemarksForCopy = (stone, lang = 'en') => {
+    const qty = typeof stone.quantity === 'string' ? parseInt(stone.quantity, 10) : stone.quantity;
+    const qtyText = (qty > 1 && isFinite(qty)) ? ` x ${qty}` : '';
+
+    if (stone.calculationMode === 'byDiameter') {
+        const shapeText = t(lang, 'round');
+        return `${shapeText} ${stone.diameter}${t(lang, 'mmUnit')}${qtyText}`;
+    }
+
+    if (stone.calculationMode === 'details') {
+        if (!stone.weight) return '';
+        
+        const parts = [
+            t(lang, stone.shape),
+            `${stone.weight || '0'} ${t(lang, 'carat')}`
+        ];
+        
+        return `${parts.join(' ')}${qtyText}`;
+    }
+
+    return stone.manualRemarks ? `${stone.manualRemarks}${qtyText}` : '';
+};
+
 export const calculateCosts = ({
   customerName,
   jewelryType,
+  size,
   images,
   material,
+  materialColor,
   grams,
   showGramsInQuote,
   cadCost,
@@ -93,11 +118,45 @@ export const calculateCosts = ({
     const marginAmount = subtotal * (marginPercentage / 100);
     const totalPrice = subtotal + marginAmount;
 
+    const isColorable = colorableMaterialKeys.includes(material);
+    let fullMaterialName;
+    if (isColorable) {
+        const materialTextEn = t('en', material); // e.g. "Gold 14k"
+        const qualityMatch = materialTextEn.match(/\d+k/);
+        const quality = qualityMatch ? qualityMatch[0] : ''; // "14k"
+        
+        const colorTextEn = t('en', materialColor); // e.g. "White Gold"
+
+        fullMaterialName = `${quality} ${colorTextEn}`; // "14k White Gold", same for both languages
+    } else {
+        fullMaterialName = t(language, material);
+    }
+        
+    let sizeDetails = '';
+    if (size) {
+        switch (jewelryType) {
+            case 'ring':
+                sizeDetails = `${size}`;
+                break;
+            case 'necklace':
+            case 'bracelet':
+                sizeDetails = `${size} ${t(language, 'cmUnit')}`;
+                break;
+            case 'earring':
+                sizeDetails = t(language, size);
+                break;
+        }
+    }
+
     return {
       customerName,
       jewelryType,
+      sizeDetails,
       images,
       material,
+      materialColor,
+      isColorable,
+      fullMaterialName,
       grams,
       showGramsInQuote,
       materialPricePerGram: materialBasePrice,
@@ -107,6 +166,8 @@ export const calculateCosts = ({
       mainStoneRemarks: getStoneRemarks(mainStone, language),
       sideStonesCost: calculatedSideStonesCost,
       sideStonesRemarks: sideStones.map(stone => getStoneRemarks(stone, language)).filter(Boolean).join('\n'),
+      mainStoneRemarksForCopy: getStoneRemarksForCopy(mainStone, language),
+      sideStonesRemarksForCopy: sideStones.map(stone => getStoneRemarksForCopy(stone, language)).filter(Boolean).join('\n'),
       settingCost: calculatedSettingCost,
       laborCost: calculatedLaborCost,
       subtotal,

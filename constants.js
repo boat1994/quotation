@@ -1,5 +1,6 @@
 
 
+
 export const defaultMaterialPrices = {
   silver925: 100,
   gold9k: 1500,
@@ -15,13 +16,18 @@ export const defaultSettingCosts = {
 
 export const materialKeys = ['silver925', 'gold9k', 'gold14k', 'gold18k', 'pt950'];
 
+export const colorableMaterialKeys = ['gold9k', 'gold14k', 'gold18k'];
+export const materialColorKeys = ['yellowGold', 'whiteGold', 'roseGold'];
+
 export const jewelryTypeKeys = ['ring', 'bracelet', 'necklace', 'earring', 'pendant'];
+export const earringSizeKeys = ['s', 'm', 'l', 'xl'];
 
 export const diamondShapeKeys = ['round', 'princess', 'emerald', 'oval', 'marquise', 'pear', 'cushion'];
 
 export const diamondColors = ['D', 'E', 'F', 'G', 'H', 'I', 'J'];
 
 export const diamondDetailKeys = ['EX', 'VG'];
+export const diamondClarityKeys = ['VVS', 'VS', 'SI'];
 
 export const diamondConversionTableLimited = [
   { "diameter_mm": "0.80", "weight_ct": "0.0025" },
@@ -71,7 +77,7 @@ export const getInitialStoneState = () => ({
   weight: '',
   color: 'D',
   cut: 'EX',
-  clarity: 'EX',
+  clarity: 'VVS',
   polish: 'EX',
   manualRemarks: '',
   quantity: 1,

@@ -1,5 +1,6 @@
 
 
+
 import jsPDF from 'jspdf';
 import { formatCurrency } from './utils.js';
 import { sarabunBase64 } from './font.js';
@@ -158,7 +159,7 @@ export const generateShopPdf = (summary, lang) => {
       yPos += 8;
     };
     
-    lineItem(t(lang, 'pdfMaterialPricePerGramLabel'), formatCurrency(summary.materialPricePerGram, lang), t(lang, summary.material));
+    lineItem(t(lang, 'pdfMaterialPricePerGramLabel'), formatCurrency(summary.materialPricePerGram, lang), summary.fullMaterialName);
     const materialLabel = `(${summary.grams || 0}${t(lang, 'gramsUnit')}) ${t(lang, 'lossLabel')}`;
     lineItem(t(lang, 'pdfTotalMaterialCostLabel'), formatCurrency(summary.materialCost, lang), materialLabel);
 
@@ -245,11 +246,12 @@ export const generateCustomerPdf = (summary, lang) => {
     };
     
     if(summary.jewelryType) specItem(t(lang, 'pdfJewelryTypeLabel'), t(lang, summary.jewelryType));
+    if(summary.sizeDetails) specItem(t(lang, 'pdfSizeLabel'), summary.sizeDetails);
     const materialGrams = summary.showGramsInQuote ? ` (${summary.grams || 0}${t(lang, 'gramsUnit')})` : '';
-    const materialLabel = `${t(lang, summary.material)}${materialGrams}`;
+    const materialLabel = `${summary.fullMaterialName}${materialGrams}`;
     specItem(t(lang, 'pdfMaterialLabel'), materialLabel);
     if(summary.mainStoneRemarks) specItem(t(lang, 'pdfMainStoneLabel'), summary.mainStoneRemarks);
-    if(summary.sideStonesRemarks) specItem(t(lang, 'pdfSideStoneLabel'), summary.sideStonesRemarks.replace(/\n/g, ', '));
+    if(summary.sideStonesRemarks) specItem(t(lang, 'pdfSideStoneLabel'), summary.sideStonesRemarks);
 
     yPos += 10;
     doc.setLineWidth(0.5);
@@ -303,13 +305,14 @@ export const generateFactoryPdf = (summary, lang) => {
     };
     
     if(summary.jewelryType) specItem(t(lang, 'pdfJewelryTypeLabel'), t(lang, summary.jewelryType));
+    if(summary.sizeDetails) specItem(t(lang, 'pdfSizeLabel'), summary.sizeDetails);
     
     // Factory needs weight, so always include it.
-    const materialLabel = `${t(lang, summary.material)} (${summary.grams || 0}${t(lang, 'gramsUnit')})`;
+    const materialLabel = `${summary.fullMaterialName} (${summary.grams || 0}${t(lang, 'gramsUnit')})`;
     specItem(t(lang, 'pdfMaterialLabel'), materialLabel);
 
     if(summary.mainStoneRemarks) specItem(t(lang, 'pdfMainStoneLabel'), summary.mainStoneRemarks);
-    if(summary.sideStonesRemarks) specItem(t(lang, 'pdfSideStoneLabel'), summary.sideStonesRemarks.replace(/\n/g, ', '));
+    if(summary.sideStonesRemarks) specItem(t(lang, 'pdfSideStoneLabel'), summary.sideStonesRemarks);
 
     yPos = addRemarksToPdf(doc, summary.remarksForFactoryShop, yPos, lang);
 
