@@ -110,7 +110,8 @@ const SummaryModal = ({
                         <>
                             <h2 id="summary-heading">{t(language, 'costBreakdown')}</h2>
                             <div className="summary-details">
-                                <SummaryItem lang={language} label={t(language, 'materialCostLabel')} value={summary.materialCost} remarks={`${t(language, summary.material)} (${summary.grams || 0}${t(language, 'gramsUnit')})`}/>
+                                <SummaryItem lang={language} label={t(language, 'materialPricePerGramLabel')} value={summary.materialPricePerGram} remarks={t(language, summary.material)}/>
+                                <SummaryItem lang={language} label={t(language, 'totalMaterialCostLabel')} value={summary.materialCost} remarks={`(${summary.grams || 0}${t(language, 'gramsUnit')}) ${t(language, 'lossLabel')}`}/>
                                 <SummaryItem lang={language} label={t(language, 'cadCostLabel')} value={summary.cadCost} />
                                 <SummaryItem lang={language} label={t(language, 'mainStoneLabel')} value={summary.mainStoneCost} remarks={summary.mainStoneRemarks}/>
                                 <SummaryItem lang={language} label={t(language, 'sideStonesCostLabel')} value={summary.sideStonesCost} remarks={summary.sideStonesRemarks}/>
@@ -382,12 +383,33 @@ const StoneInputGroup = ({ label, stone, onStoneChange, idPrefix, isSideStone = 
       )}
 
       {stone.calculationMode === 'byDiameter' && isSideStone && (
-        <div className="grid-group side-stone-diameter">
-          <select value={stone.diameter} onChange={(e) => handleDiameterModeChange('diameter', e.target.value)} aria-label={`${label} Diameter`}>
-            {diamondConversionTableLimited.map(d => <option key={d.diameter_mm} value={d.diameter_mm}>{d.diameter_mm} {t(lang, 'mmUnit')}</option>)}
-          </select>
-          <input type="number" value={stone.pricePerCarat} onChange={(e) => handleDiameterModeChange('pricePerCarat', e.target.value)} placeholder={t(lang, 'pricePerCaratPlaceholder')} aria-label={`${label} Price per Carat`} step={0.01} inputMode="decimal" />
-          <input type="number" value={stone.quantity} onChange={(e) => handleDiameterModeChange('quantity', e.target.value)} placeholder={t(lang, 'qtyPlaceholder')} aria-label={`${label} quantity`} step={1} min="1" inputMode="numeric" />
+        <div className="details-grid">
+          <div className="details-item">
+            <label htmlFor={`${idPrefix}Diameter`}>{t(lang, 'diameterLabel')}</label>
+            <select id={`${idPrefix}Diameter`} value={stone.diameter} onChange={(e) => handleDiameterModeChange('diameter', e.target.value)} aria-label={`${label} Diameter`}>
+              {diamondConversionTableLimited.map(d => <option key={d.diameter_mm} value={d.diameter_mm}>{d.diameter_mm} {t(lang, 'mmUnit')}</option>)}
+            </select>
+          </div>
+          <div className="details-item">
+            <label htmlFor={`${idPrefix}PricePerCarat`}>{t(lang, 'pricePerCaratLabel')}</label>
+            <input id={`${idPrefix}PricePerCarat`} type="number" value={stone.pricePerCarat} onChange={(e) => handleDiameterModeChange('pricePerCarat', e.target.value)} placeholder={t(lang, 'pricePerCaratPlaceholder')} aria-label={`${label} Price per Carat`} step={0.01} inputMode="decimal" />
+          </div>
+          <div className="details-item">
+            <label htmlFor={`${idPrefix}Quantity`}>{t(lang, 'qtyPlaceholder')}</label>
+            <input id={`${idPrefix}Quantity`} type="number" value={stone.quantity} onChange={(e) => handleDiameterModeChange('quantity', e.target.value)} placeholder={t(lang, 'qtyPlaceholder')} aria-label={`${label} quantity`} step={1} min="1" inputMode="numeric" />
+          </div>
+          <div className="details-item">
+            <label htmlFor={`${idPrefix}ColorDiameter`}>{t(lang, 'color')}</label>
+            <select id={`${idPrefix}ColorDiameter`} value={stone.color} onChange={(e) => handleDiameterModeChange('color', e.target.value)} aria-label={`${label} Color`}>
+               {diamondColors.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+          <div className="details-item">
+            <label htmlFor={`${idPrefix}ClarityDiameter`}>{t(lang, 'clarity')}</label>
+            <select id={`${idPrefix}ClarityDiameter`} value={stone.clarity} onChange={(e) => handleDiameterModeChange('clarity', e.target.value)} aria-label={`${label} Clarity`}>
+               {diamondDetailKeys.map(key => <option key={key} value={key}>{t(lang, key)}</option>)}
+            </select>
+          </div>
         </div>
       )}
     </div>
@@ -404,7 +426,7 @@ function App() {
   const [images, setImages] = useState<ImageState[]>([]);
   const [cadCost, setCadCost] = useState('');
   const [laborCost, setLaborCost] = useState('');
-  const [margin, setMargin] = useState('20');
+  const [margin, setMargin] = useState('30');
   const [summaryView, setSummaryView] = useState('shop');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPreferencesOpen, setIsPreferencesOpen] = useState(false);

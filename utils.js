@@ -15,11 +15,20 @@ export const getStoneRemarks = (stone, lang = 'en') => {
     
     if (stone.calculationMode === 'byDiameter') {
         const conversion = diamondConversionTableLimited.find(d => d.diameter_mm === String(stone.diameter));
+        let baseRemark;
         if (conversion) {
             const weight = parseFloat(conversion.weight_ct);
-            return `${t(lang, 'round')} ${stone.diameter}${t(lang, 'mmUnit')} (${weight.toFixed(3)}${t(lang, 'carat')})${qtyText}`;
+            baseRemark = `${t(lang, 'round')} ${stone.diameter}${t(lang, 'mmUnit')} (${weight.toFixed(3)}${t(lang, 'carat')})`;
+        } else {
+            baseRemark = `${t(lang, 'round')} ${stone.diameter}${t(lang, 'mmUnit')}`;
         }
-        return `${t(lang, 'round')} ${stone.diameter}${t(lang, 'mmUnit')}${qtyText}`;
+        
+        const details = [
+            `${t(lang, 'color')}: ${stone.color}`,
+            `${t(lang, 'clarity')}: ${t(lang, stone.clarity)}`
+        ];
+
+        return `${[baseRemark, ...details].join(', ')}${qtyText}`;
     }
 
     if (stone.calculationMode === 'details') {
@@ -91,6 +100,7 @@ export const calculateCosts = ({
       material,
       grams,
       showGramsInQuote,
+      materialPricePerGram: materialBasePrice,
       materialCost: calculatedMaterialCost,
       cadCost: calculatedCadCost,
       mainStoneCost: calculatedMainStoneCost,

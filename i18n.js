@@ -1,4 +1,5 @@
 
+
 export const translations = {
   en: {
     // App
@@ -50,7 +51,9 @@ export const translations = {
     customerView: 'For Customer',
     costBreakdown: 'Cost Breakdown',
     quotation: 'Quotation',
-    materialCostLabel: 'Material Cost (+15%)',
+    materialPricePerGramLabel: 'Material Price (per gram)',
+    totalMaterialCostLabel: 'Total Material Cost',
+    lossLabel: '(+15% loss)',
     sideStonesCostLabel: 'Side Stones Cost',
     settingCostLabel: 'Setting Cost',
     subtotalLabel: 'Subtotal',
@@ -81,7 +84,8 @@ export const translations = {
     pdfMaterialLabel: 'Material:',
     pdfMainStoneLabel: 'Main Stone:',
     pdfSideStoneLabel: 'Side Stones:',
-    pdfMaterialCostPdfLabel: 'Material Cost (+15%)',
+    pdfMaterialPricePerGramLabel: 'Material Price (per gram)',
+    pdfTotalMaterialCostLabel: 'Total Material Cost',
     pdfCadCostLabel: 'CAD Cost',
     pdfMainStoneCostLabel: 'Main Stone Cost',
     pdfSideStonesCostLabel: 'Side Stones Cost',
@@ -163,7 +167,7 @@ export const translations = {
     gramsVisibilityLabel: 'น้ำหนักในใบเสนอราคา',
     refImagesLabel: 'รูปภาพอ้างอิง (สูงสุด 5 รูป)',
     cadCostLabel: 'ค่าออกแบบ CAD',
-    mainStoneLabel: 'เพชรยอด',
+    mainStoneLabel: 'Main stone',
     sideStoneLabel: 'เพชรบ่า',
     laborCostLabel: 'ค่าแรงอื่นๆ',
     marginLabel: 'กำไร (%)',
@@ -202,8 +206,10 @@ export const translations = {
     customerView: 'สำหรับลูกค้า',
     costBreakdown: 'รายละเอียดต้นทุน',
     quotation: 'ใบเสนอราคา',
-    materialCostLabel: 'ค่าวัสดุ (+15%)',
-    sideStonesCostLabel: 'ค่า Side stones',
+    materialPricePerGramLabel: 'ราคาวัสดุ (ต่อกรัม)',
+    totalMaterialCostLabel: 'ราคารวมวัสดุ',
+    lossLabel: '(+15% กําเหน็จ)',
+    sideStonesCostLabel: 'Side stones',
     settingCostLabel: 'ค่าฝัง',
     subtotalLabel: 'ยอดรวมย่อย',
     marginAmountLabel: 'กำไร ({marginPercentage}%)',
@@ -233,7 +239,8 @@ export const translations = {
     pdfMaterialLabel: 'วัสดุ:',
     pdfMainStoneLabel: 'Main stone:',
     pdfSideStoneLabel: 'Side stones:',
-    pdfMaterialCostPdfLabel: 'ค่าวัสดุ (+15% loss)',
+    pdfMaterialPricePerGramLabel: 'ราคาวัสดุ (ต่อกรัม)',
+    pdfTotalMaterialCostLabel: 'ราคารวมวัสดุ',
     pdfCadCostLabel: 'ค่าออกแบบ CAD',
     pdfMainStoneCostLabel: 'ราคา Main stone',
     pdfSideStonesCostLabel: 'ราคา Side stone',

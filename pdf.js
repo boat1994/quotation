@@ -1,4 +1,5 @@
 
+
 import jsPDF from 'jspdf';
 import { formatCurrency } from './utils.js';
 import { sarabunBase64 } from './font.js';
@@ -157,8 +158,10 @@ export const generateShopPdf = (summary, lang) => {
       yPos += 8;
     };
     
-    const materialLabel = `${t(lang, summary.material)} (${summary.grams || 0}${t(lang, 'gramsUnit')})`;
-    lineItem(t(lang, 'pdfMaterialCostPdfLabel'), formatCurrency(summary.materialCost, lang), materialLabel);
+    lineItem(t(lang, 'pdfMaterialPricePerGramLabel'), formatCurrency(summary.materialPricePerGram, lang), t(lang, summary.material));
+    const materialLabel = `(${summary.grams || 0}${t(lang, 'gramsUnit')}) ${t(lang, 'lossLabel')}`;
+    lineItem(t(lang, 'pdfTotalMaterialCostLabel'), formatCurrency(summary.materialCost, lang), materialLabel);
+
     lineItem(t(lang, 'pdfCadCostLabel'), formatCurrency(summary.cadCost, lang));
     lineItem(t(lang, 'pdfMainStoneCostLabel'), formatCurrency(summary.mainStoneCost, lang), summary.mainStoneRemarks);
     lineItem(t(lang, 'pdfSideStonesCostLabel'), formatCurrency(summary.sideStonesCost, lang), summary.sideStonesRemarks);
