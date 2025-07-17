@@ -181,7 +181,6 @@ const SummaryModal = ({
                     </div>
 
                     <div className="download-grid">
-                        <button type="button" className="download-btn shop" onClick={handleDownloadShopPDF}>{t(language, 'downloadShopPDF')}</button>
                         <button type="button" className="download-btn customer" onClick={handleDownloadCustomerPDF}>{t(language, 'downloadCustomerPDF')}</button>
                         <button type="button" className="download-btn factory" onClick={handleDownloadFactoryPDF}>{t(language, 'downloadFactoryPDF')}</button>
                     </div>

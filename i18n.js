@@ -188,7 +188,7 @@ export const translations = {
     costBreakdown: 'รายละเอียดต้นทุน',
     quotation: 'ใบเสนอราคา',
     materialCostLabel: 'ค่าวัสดุ (+15%)',
-    sideStonesCostLabel: 'ค่าหินข้าง',
+    sideStonesCostLabel: 'ค่า Side stones',
     subtotalLabel: 'ยอดรวมย่อย',
     marginAmountLabel: 'กำไร ({marginPercentage}%)',
     totalShopLabel: 'ราคาสุทธิ:',
