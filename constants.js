@@ -1,10 +1,16 @@
 
-export const materialPrices = {
+
+export const defaultMaterialPrices = {
   silver925: 100,
   gold9k: 1500,
   gold14k: 2300,
   gold18k: 2800,
   pt950: 1890,
+};
+
+export const defaultSettingCosts = {
+    mainStone: 100,
+    sideStone: 15,
 };
 
 export const materialKeys = ['silver925', 'gold9k', 'gold14k', 'gold18k', 'pt950'];

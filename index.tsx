@@ -12,6 +12,8 @@ import {
   getInitialStoneState,
   jewelryTypeKeys,
   diamondConversionTableLimited,
+  defaultMaterialPrices,
+  defaultSettingCosts,
 } from './constants.js';
 import { formatCurrency, calculateCosts } from './utils.js';
 import { generateShopPdf, generateCustomerPdf, generateFactoryPdf } from './pdf.js';
@@ -112,6 +114,7 @@ const SummaryModal = ({
                                 <SummaryItem lang={language} label={t(language, 'cadCostLabel')} value={summary.cadCost} />
                                 <SummaryItem lang={language} label={t(language, 'mainStoneLabel')} value={summary.mainStoneCost} remarks={summary.mainStoneRemarks}/>
                                 <SummaryItem lang={language} label={t(language, 'sideStonesCostLabel')} value={summary.sideStonesCost} remarks={summary.sideStonesRemarks}/>
+                                <SummaryItem lang={language} label={t(language, 'settingCostLabel')} value={summary.settingCost} />
                                 <SummaryItem lang={language} label={t(language, 'laborCostLabel')} value={summary.laborCost} />
                             </div>
                             <div className="summary-item summary-subtotal">
@@ -190,6 +193,100 @@ const SummaryModal = ({
     );
 };
 
+const PreferencesModal = ({ isOpen, onClose, currentConfig, onSave, lang }) => {
+    const [localConfig, setLocalConfig] = useState(currentConfig);
+  
+    useEffect(() => {
+      setLocalConfig(currentConfig);
+    }, [currentConfig, isOpen]);
+  
+    useLayoutEffect(() => {
+        if (isOpen) {
+            const handleKeyDown = (event) => {
+                if (event.key === 'Escape') onClose();
+            };
+            window.addEventListener('keydown', handleKeyDown);
+            return () => window.removeEventListener('keydown', handleKeyDown);
+        }
+    }, [isOpen, onClose]);
+  
+    const handleMaterialChange = (key, value) => {
+      setLocalConfig(prev => ({
+        ...prev,
+        materialPrices: { ...prev.materialPrices, [key]: parseFloat(value) || 0 }
+      }));
+    };
+  
+    const handleSettingCostChange = (key, value) => {
+      setLocalConfig(prev => ({
+        ...prev,
+        settingCosts: { ...prev.settingCosts, [key]: parseFloat(value) || 0 }
+      }));
+    };
+  
+    const handleSave = () => {
+      onSave(localConfig);
+      onClose();
+    };
+
+    if (!isOpen) return null;
+  
+    return (
+      <div className="modal-overlay" role="dialog" aria-modal="true" onClick={onClose}>
+        <div className="modal-content" onClick={e => e.stopPropagation()}>
+          <h2>{t(lang, 'preferencesTitle')}</h2>
+  
+          <div className="config-section">
+            <h3>{t(lang, 'materialPricesLabel')}</h3>
+            <div className="config-grid">
+              {materialKeys.map(key => (
+                <div key={key} className="config-item">
+                  <label htmlFor={`config-${key}`}>{t(lang, key)}</label>
+                  <input
+                    id={`config-${key}`}
+                    type="number"
+                    value={localConfig.materialPrices[key]}
+                    onChange={e => handleMaterialChange(key, e.target.value)}
+                    step="0.01"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+  
+          <div className="config-section">
+            <h3>{t(lang, 'settingCostsLabel')}</h3>
+            <div className="config-grid">
+              <div className="config-item">
+                <label htmlFor="config-mainStone">{t(lang, 'mainStoneSettingCostLabel')}</label>
+                <input
+                  id="config-mainStone"
+                  type="number"
+                  value={localConfig.settingCosts.mainStone}
+                  onChange={e => handleSettingCostChange('mainStone', e.target.value)}
+                />
+              </div>
+              <div className="config-item">
+                <label htmlFor="config-sideStone">{t(lang, 'sideStoneSettingCostLabel')}</label>
+                <input
+                  id="config-sideStone"
+                  type="number"
+                  value={localConfig.settingCosts.sideStone}
+                  onChange={e => handleSettingCostChange('sideStone', e.target.value)}
+                />
+              </div>
+            </div>
+          </div>
+  
+          <div className="modal-actions">
+            <button onClick={onClose} className="cancel-btn">{t(lang, 'cancelBtn')}</button>
+            <button onClick={handleSave} className="save-btn">{t(lang, 'saveBtn')}</button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
 const StoneInputGroup = ({ label, stone, onStoneChange, idPrefix, isSideStone = false, onRemove = null, lang }) => {
   const handleInputChange = (field, value) => {
     onStoneChange({ ...stone, [field]: value });
@@ -247,22 +344,40 @@ const StoneInputGroup = ({ label, stone, onStoneChange, idPrefix, isSideStone = 
 
       {stone.calculationMode === 'details' && (
         <div className="details-grid">
-          <select value={stone.shape} onChange={(e) => handleInputChange('shape', e.target.value)} aria-label={`${label} Shape`}>
-             {diamondShapeKeys.map(key => <option key={key} value={key}>{t(lang, key)}</option>)}
-          </select>
-          <input type="number" value={stone.weight} onChange={(e) => handleInputChange('weight', e.target.value)} placeholder={t(lang, 'weightPlaceholder')} step={0.01} aria-label={`${label} Weight`} inputMode="decimal" />
-          <select value={stone.color} onChange={(e) => handleInputChange('color', e.target.value)} aria-label={`${label} Color`}>
-             {diamondColors.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
-          <select value={stone.cut} onChange={(e) => handleInputChange('cut', e.target.value)} aria-label={`${label} Cut`}>
-             {diamondDetailKeys.map(key => <option key={key} value={key}>{t(lang, key)}</option>)}
-          </select>
-          <select value={stone.clarity} onChange={(e) => handleInputChange('clarity', e.target.value)} aria-label={`${label} Clarity`}>
-             {diamondDetailKeys.map(key => <option key={key} value={key}>{t(lang, key)}</option>)}
-          </select>
-          <select value={stone.polish} onChange={(e) => handleInputChange('polish', e.target.value)} aria-label={`${label} Polish`}>
-             {diamondDetailKeys.map(key => <option key={key} value={key}>{t(lang, key)}</option>)}
-          </select>
+          <div className="details-item">
+            <label htmlFor={`${idPrefix}Shape`}>{t(lang, 'shapeLabel')}</label>
+            <select id={`${idPrefix}Shape`} value={stone.shape} onChange={(e) => handleInputChange('shape', e.target.value)}>
+               {diamondShapeKeys.map(key => <option key={key} value={key}>{t(lang, key)}</option>)}
+            </select>
+          </div>
+          <div className="details-item">
+            <label htmlFor={`${idPrefix}Weight`}>{t(lang, 'weightPlaceholder')}</label>
+            <input id={`${idPrefix}Weight`} type="number" value={stone.weight} onChange={(e) => handleInputChange('weight', e.target.value)} placeholder={t(lang, 'weightPlaceholder')} step={0.01} inputMode="decimal" />
+          </div>
+          <div className="details-item">
+            <label htmlFor={`${idPrefix}Color`}>{t(lang, 'color')}</label>
+            <select id={`${idPrefix}Color`} value={stone.color} onChange={(e) => handleInputChange('color', e.target.value)}>
+               {diamondColors.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+          <div className="details-item">
+            <label htmlFor={`${idPrefix}Cut`}>{t(lang, 'cut')}</label>
+            <select id={`${idPrefix}Cut`} value={stone.cut} onChange={(e) => handleInputChange('cut', e.target.value)}>
+               {diamondDetailKeys.map(key => <option key={key} value={key}>{t(lang, key)}</option>)}
+            </select>
+          </div>
+          <div className="details-item">
+            <label htmlFor={`${idPrefix}Clarity`}>{t(lang, 'clarity')}</label>
+            <select id={`${idPrefix}Clarity`} value={stone.clarity} onChange={(e) => handleInputChange('clarity', e.target.value)}>
+               {diamondDetailKeys.map(key => <option key={key} value={key}>{t(lang, key)}</option>)}
+            </select>
+          </div>
+          <div className="details-item">
+            <label htmlFor={`${idPrefix}Polish`}>{t(lang, 'polish')}</label>
+            <select id={`${idPrefix}Polish`} value={stone.polish} onChange={(e) => handleInputChange('polish', e.target.value)}>
+               {diamondDetailKeys.map(key => <option key={key} value={key}>{t(lang, key)}</option>)}
+            </select>
+          </div>
         </div>
       )}
 
@@ -292,6 +407,11 @@ function App() {
   const [margin, setMargin] = useState('20');
   const [summaryView, setSummaryView] = useState('shop');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isPreferencesOpen, setIsPreferencesOpen] = useState(false);
+  const [config, setConfig] = useState({
+    materialPrices: defaultMaterialPrices,
+    settingCosts: defaultSettingCosts,
+  });
 
 
   type Stone = ReturnType<typeof getInitialStoneState>;
@@ -303,6 +423,23 @@ function App() {
   const [finalPrice, setFinalPrice] = useState('');
   const [remarksForFactoryShop, setRemarksForFactoryShop] = useState('');
   const [remarksForCustomer, setRemarksForCustomer] = useState('');
+
+  useEffect(() => {
+    const savedConfig = localStorage.getItem('jewelryConfig');
+    if (savedConfig) {
+      const parsedConfig = JSON.parse(savedConfig);
+      // Merge with defaults to ensure all keys are present
+      setConfig({
+        materialPrices: { ...defaultMaterialPrices, ...parsedConfig.materialPrices },
+        settingCosts: { ...defaultSettingCosts, ...parsedConfig.settingCosts },
+      });
+    }
+  }, []);
+
+  const handleSaveConfig = (newConfig) => {
+    setConfig(newConfig);
+    localStorage.setItem('jewelryConfig', JSON.stringify(newConfig));
+  };
 
 
   const handleAddSideStone = () => {
@@ -358,7 +495,9 @@ function App() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const summaryData = calculateCosts({
-        customerName, jewelryType, images, material, grams, showGramsInQuote, cadCost, laborCost, margin, mainStone, sideStones, language
+        customerName, jewelryType, images, material, grams, showGramsInQuote, cadCost, laborCost, margin, mainStone, sideStones, language,
+        materialPrices: config.materialPrices,
+        settingCosts: config.settingCosts,
     });
     setSummary(summaryData);
     setFinalPrice(summaryData.totalPrice.toFixed(2));
@@ -418,10 +557,15 @@ function App() {
 
   return (
     <main className="container">
-      <div className="language-switcher">
-        <a href="#" onClick={(e) => { e.preventDefault(); setLanguage('en'); }} className={language === 'en' ? 'active' : ''}>English</a>
-        <span>|</span>
-        <a href="#" onClick={(e) => { e.preventDefault(); setLanguage('th'); }} className={language === 'th' ? 'active' : ''}>ไทย</a>
+      <div className="header-bar">
+        <button onClick={() => setIsPreferencesOpen(true)} className="preferences-btn" aria-label="Preferences">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        </button>
+        <div className="language-switcher">
+          <a href="#" onClick={(e) => { e.preventDefault(); setLanguage('en'); }} className={language === 'en' ? 'active' : ''}>English</a>
+          <span>|</span>
+          <a href="#" onClick={(e) => { e.preventDefault(); setLanguage('th'); }} className={language === 'th' ? 'active' : ''}>ไทย</a>
+        </div>
       </div>
       <div className="logo-container">
         <img src={logoBase64} alt="Bogus Jewelry Logo" className="logo" />
@@ -574,6 +718,14 @@ function App() {
           handleDownloadCustomerPDF={handleDownloadCustomerPDF}
           handleDownloadFactoryPDF={handleDownloadFactoryPDF}
           language={language}
+      />
+
+      <PreferencesModal 
+        isOpen={isPreferencesOpen}
+        onClose={() => setIsPreferencesOpen(false)}
+        currentConfig={config}
+        onSave={handleSaveConfig}
+        lang={language}
       />
     </main>
   );

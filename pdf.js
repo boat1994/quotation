@@ -162,6 +162,7 @@ export const generateShopPdf = (summary, lang) => {
     lineItem(t(lang, 'pdfCadCostLabel'), formatCurrency(summary.cadCost, lang));
     lineItem(t(lang, 'pdfMainStoneCostLabel'), formatCurrency(summary.mainStoneCost, lang), summary.mainStoneRemarks);
     lineItem(t(lang, 'pdfSideStonesCostLabel'), formatCurrency(summary.sideStonesCost, lang), summary.sideStonesRemarks);
+    lineItem(t(lang, 'pdfSettingCostLabel'), formatCurrency(summary.settingCost, lang));
     lineItem(t(lang, 'pdfLaborCostLabel'), formatCurrency(summary.laborCost, lang));
     
     yPos += 1;

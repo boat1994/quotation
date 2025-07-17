@@ -1,3 +1,4 @@
+
 export const translations = {
   en: {
     // App
@@ -12,7 +13,7 @@ export const translations = {
     cadCostLabel: 'CAD Cost',
     mainStoneLabel: 'Main Stone',
     sideStoneLabel: 'Side Stone',
-    laborCostLabel: 'Labor Cost',
+    laborCostLabel: 'Labor Cost (additional)',
     marginLabel: 'Margin (%)',
     
     // Placeholders
@@ -37,6 +38,8 @@ export const translations = {
     downloadFactoryPDF: 'For Factory',
     backBtn: '← Back',
     backBtnLabel: 'Back to calculator',
+    saveBtn: 'Save',
+    cancelBtn: 'Cancel',
 
     // Radio Buttons
     showGramsRadio: 'Show weight',
@@ -49,12 +52,20 @@ export const translations = {
     quotation: 'Quotation',
     materialCostLabel: 'Material Cost (+15%)',
     sideStonesCostLabel: 'Side Stones Cost',
+    settingCostLabel: 'Setting Cost',
     subtotalLabel: 'Subtotal',
     marginAmountLabel: 'Margin ({marginPercentage}%)',
     totalShopLabel: 'Total Estimated Cost:',
     totalCustomerLabel: 'Total Estimated Price:',
     remarksForFactoryShopLabel: 'Remarks for Factory and Shop',
     remarksForCustomerLabel: 'Remarks for Customer',
+
+    // Preferences Modal
+    preferencesTitle: 'Preferences',
+    materialPricesLabel: 'Material Prices (per gram)',
+    settingCostsLabel: 'Setting Costs',
+    mainStoneSettingCostLabel: 'Main Stone (per project)',
+    sideStoneSettingCostLabel: 'Side Stone (per stone)',
 
     // PDF
     shopPdfTitle: 'Quotation (For Shop)',
@@ -74,7 +85,8 @@ export const translations = {
     pdfCadCostLabel: 'CAD Cost',
     pdfMainStoneCostLabel: 'Main Stone Cost',
     pdfSideStonesCostLabel: 'Side Stones Cost',
-    pdfLaborCostLabel: 'Labor Cost',
+    pdfSettingCostLabel: 'Setting Cost',
+    pdfLaborCostLabel: 'Labor Cost (additional)',
     pdfSubtotalLabel: 'Subtotal',
     pdfMarginLabel: 'Margin ({marginPercentage}%)',
     pdfTotalEstCostLabel: 'Total Estimated Cost:',
@@ -130,6 +142,7 @@ export const translations = {
     VG: 'Very Good',
 
     // Stone remarks parts
+    shapeLabel: 'Shape',
     waitingForDetails: 'Waiting for diamond details...',
     carat: 'ct',
     color: 'Color',
@@ -152,7 +165,7 @@ export const translations = {
     cadCostLabel: 'ค่าออกแบบ CAD',
     mainStoneLabel: 'เพชรยอด',
     sideStoneLabel: 'เพชรบ่า',
-    laborCostLabel: 'ค่าแรง',
+    laborCostLabel: 'ค่าแรงอื่นๆ',
     marginLabel: 'กำไร (%)',
     
     // Placeholders
@@ -177,6 +190,8 @@ export const translations = {
     downloadFactoryPDF: 'สำหรับโรงงาน',
     backBtn: '← กลับ',
     backBtnLabel: 'กลับไปที่เครื่องคำนวณ',
+    saveBtn: 'บันทึก',
+    cancelBtn: 'ยกเลิก',
 
     // Radio Buttons
     showGramsRadio: 'แสดงน้ำหนัก',
@@ -189,12 +204,20 @@ export const translations = {
     quotation: 'ใบเสนอราคา',
     materialCostLabel: 'ค่าวัสดุ (+15%)',
     sideStonesCostLabel: 'ค่า Side stones',
+    settingCostLabel: 'ค่าฝัง',
     subtotalLabel: 'ยอดรวมย่อย',
     marginAmountLabel: 'กำไร ({marginPercentage}%)',
     totalShopLabel: 'ราคาสุทธิ:',
     totalCustomerLabel: 'ราคาประเมิน:',
     remarksForFactoryShopLabel: 'หมายเหตุสำหรับโรงงานและร้านค้า',
     remarksForCustomerLabel: 'หมายเหตุสำหรับลูกค้า',
+
+    // Preferences Modal
+    preferencesTitle: 'การตั้งค่า',
+    materialPricesLabel: 'ราคาวัสดุ (ต่อกรัม)',
+    settingCostsLabel: 'ค่าฝัง',
+    mainStoneSettingCostLabel: 'เพชรยอด (ต่อโปรเจค)',
+    sideStoneSettingCostLabel: 'เพชรบ่า (ต่อเม็ด)',
     
     // PDF
     shopPdfTitle: 'ใบเสนอราคา (สำหรับร้านค้า)',
@@ -214,7 +237,8 @@ export const translations = {
     pdfCadCostLabel: 'ค่าออกแบบ CAD',
     pdfMainStoneCostLabel: 'ราคา Main stone',
     pdfSideStonesCostLabel: 'ราคา Side stone',
-    pdfLaborCostLabel: 'ค่าแรง',
+    pdfSettingCostLabel: 'ค่าฝัง',
+    pdfLaborCostLabel: 'ค่าแรงอื่นๆ',
     pdfSubtotalLabel: 'ยอดรวมย่อย',
     pdfMarginLabel: 'กำไร ({marginPercentage}%)',
     pdfTotalEstCostLabel: 'ต้นทุนโดยประมาณ:',
@@ -269,6 +293,7 @@ export const translations = {
     VG: 'VG',
     
     // Stone remarks parts
+    shapeLabel: 'รูปทรง',
     waitingForDetails: 'รอรายละเอียดเพชร...',
     carat: 'กะรัต',
     color: 'สี',

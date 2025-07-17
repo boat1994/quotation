@@ -1,5 +1,6 @@
 
-import { materialPrices, diamondConversionTableLimited } from './constants.js';
+
+import { diamondConversionTableLimited } from './constants.js';
 import { t } from './i18n.js';
 
 export const formatCurrency = (value, lang = 'en') =>
@@ -50,7 +51,9 @@ export const calculateCosts = ({
   sideStones,
   laborCost,
   margin,
-  language
+  language,
+  materialPrices,
+  settingCosts,
 }) => {
     const materialBasePrice = materialPrices[material] || 0;
     const calculatedMaterialCost = (parseFloat(grams) || 0) * materialBasePrice * 1.15;
@@ -59,6 +62,14 @@ export const calculateCosts = ({
     const calculatedSideStonesCost = sideStones.reduce(
         (total, stone) => total + ((parseFloat(stone.cost) || 0) * (parseInt(String(stone.quantity), 10) || 1)), 0
     );
+
+    const mainStoneSettingCost = (parseFloat(mainStone.cost) || 0) > 0 ? (settingCosts.mainStone || 0) : 0;
+    const sideStonesTotalQuantity = sideStones.reduce(
+        (total, stone) => total + (parseInt(String(stone.quantity), 10) || 0), 0
+    );
+    const sideStonesSettingCost = sideStonesTotalQuantity * (settingCosts.sideStone || 0);
+    const calculatedSettingCost = mainStoneSettingCost + sideStonesSettingCost;
+
     const calculatedLaborCost = parseFloat(laborCost) || 0;
 
     const subtotal =
@@ -66,6 +77,7 @@ export const calculateCosts = ({
       calculatedCadCost +
       calculatedMainStoneCost +
       calculatedSideStonesCost +
+      calculatedSettingCost +
       calculatedLaborCost;
 
     const marginPercentage = parseFloat(margin) || 0;
@@ -85,6 +97,7 @@ export const calculateCosts = ({
       mainStoneRemarks: getStoneRemarks(mainStone, language),
       sideStonesCost: calculatedSideStonesCost,
       sideStonesRemarks: sideStones.map(stone => getStoneRemarks(stone, language)).filter(Boolean).join('\n'),
+      settingCost: calculatedSettingCost,
       laborCost: calculatedLaborCost,
       subtotal,
       marginPercentage,
