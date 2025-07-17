@@ -191,20 +191,7 @@ export const generateShopPdf = (summary, lang) => {
 
     addImagesToPdf(doc, summary.images, lang);
     
-    const pdfOutput = doc.output('dataurlstring', {
-        encryption: {
-            userPassword: '151515',
-            userPermissions: ['print', 'copy']
-        }
-    });
-
-    const filename = t(lang, 'shopPdfFilename');
-    const link = document.createElement('a');
-    link.href = pdfOutput;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    return doc.output('blob');
 };
 
 export const generateCustomerPdf = (summary, lang) => {
@@ -267,7 +254,7 @@ export const generateCustomerPdf = (summary, lang) => {
     yPos = addTermsAndConditions(doc, lang, yPos);
     
     addImagesToPdf(doc, summary.images, lang);
-    doc.save(t(lang, 'customerPdfFilename'));
+    return doc.output('blob');
 };
 
 export const generateFactoryPdf = (summary, lang) => {
@@ -317,5 +304,5 @@ export const generateFactoryPdf = (summary, lang) => {
     yPos = addRemarksToPdf(doc, summary.remarksForFactoryShop, yPos, lang);
 
     addImagesToPdf(doc, summary.images, lang);
-    doc.save(t(lang, 'factoryPdfFilename'));
+    return doc.output('blob');
 };

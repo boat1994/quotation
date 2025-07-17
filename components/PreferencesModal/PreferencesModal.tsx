@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useLayoutEffect } from 'react';
 import { materialKeys } from '../../constants.js';
 import { t } from '../../i18n.js';
@@ -20,18 +21,15 @@ const PreferencesModal = ({ isOpen, onClose, currentConfig, onSave, lang }) => {
         }
     }, [isOpen, onClose]);
   
-    const handleMaterialChange = (key, value) => {
+    const handleChange = (section, key, value) => {
       setLocalConfig(prev => ({
         ...prev,
-        materialPrices: { ...prev.materialPrices, [key]: parseFloat(value) || 0 }
+        [section]: { ...prev[section], [key]: parseFloat(value) || 0 }
       }));
     };
-  
-    const handleSettingCostChange = (key, value) => {
-      setLocalConfig(prev => ({
-        ...prev,
-        settingCosts: { ...prev.settingCosts, [key]: parseFloat(value) || 0 }
-      }));
+
+    const handleTrelloChange = (key, value) => {
+      setLocalConfig(prev => ({ ...prev, [key]: value }));
     };
   
     const handleSave = () => {
@@ -56,7 +54,7 @@ const PreferencesModal = ({ isOpen, onClose, currentConfig, onSave, lang }) => {
                     id={`config-${key}`}
                     type="number"
                     value={localConfig.materialPrices[key]}
-                    onChange={e => handleMaterialChange(key, e.target.value)}
+                    onChange={e => handleChange('materialPrices', key, e.target.value)}
                     step="0.01"
                   />
                 </div>
@@ -73,7 +71,7 @@ const PreferencesModal = ({ isOpen, onClose, currentConfig, onSave, lang }) => {
                   id="config-mainStone"
                   type="number"
                   value={localConfig.settingCosts.mainStone}
-                  onChange={e => handleSettingCostChange('mainStone', e.target.value)}
+                  onChange={e => handleChange('settingCosts', 'mainStone', e.target.value)}
                 />
               </div>
               <div className="config-item">
@@ -82,8 +80,26 @@ const PreferencesModal = ({ isOpen, onClose, currentConfig, onSave, lang }) => {
                   id="config-sideStone"
                   type="number"
                   value={localConfig.settingCosts.sideStone}
-                  onChange={e => handleSettingCostChange('sideStone', e.target.value)}
+                  onChange={e => handleChange('settingCosts', 'sideStone', e.target.value)}
                 />
+              </div>
+            </div>
+          </div>
+
+          <div className="config-section">
+            <h3>{t(lang, 'trelloIntegration')}</h3>
+            <div className="config-grid">
+              <div className="config-item full-width">
+                <label htmlFor="trelloApiKey">{t(lang, 'trelloApiKey')}</label>
+                <input id="trelloApiKey" type="text" value={localConfig.trelloApiKey} onChange={(e) => handleTrelloChange('trelloApiKey', e.target.value)} />
+              </div>
+              <div className="config-item full-width">
+                <label htmlFor="trelloApiToken">{t(lang, 'trelloApiToken')}</label>
+                <input id="trelloApiToken" type="password" value={localConfig.trelloApiToken} onChange={(e) => handleTrelloChange('trelloApiToken', e.target.value)} />
+              </div>
+              <div className="config-item full-width">
+                <label htmlFor="trelloBoardId">{t(lang, 'trelloBoardId')}</label>
+                <input id="trelloBoardId" type="text" value={localConfig.trelloBoardId} onChange={(e) => handleTrelloChange('trelloBoardId', e.target.value)} />
               </div>
             </div>
           </div>

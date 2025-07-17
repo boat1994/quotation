@@ -1,6 +1,9 @@
-import React, { useEffect, useLayoutEffect } from 'react';
+
+
+import React, { useEffect, useLayoutEffect, useState } from 'react';
 import { formatCurrency } from '../../utils.js';
 import { t } from '../../i18n.js';
+import { generateShopPdf, generateCustomerPdf, generateFactoryPdf } from '../../pdf.js';
 import './SummaryModal.css';
 
 const SummaryItem = ({ label, value, remarks = '', lang }) => (
@@ -20,6 +23,17 @@ const SpecItem = ({label, value}) => (
     </div>
 );
 
+const downloadBlob = (blob, filename) => {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setTimeout(() => URL.revokeObjectURL(url), 100);
+};
+
 const SummaryModal = ({
     isOpen,
     onClose,
@@ -32,13 +46,15 @@ const SummaryModal = ({
     setRemarksForFactoryShop,
     remarksForCustomer,
     setRemarksForCustomer,
-    handleDownloadShopPDF,
-    handleDownloadCustomerPDF,
-    handleDownloadFactoryPDF,
-    handleCopyToClipboard,
     isCopied,
+    handleCopyToClipboard,
     language,
+    config,
 }) => {
+    const [trelloLists, setTrelloLists] = useState([]);
+    const [selectedTrelloListId, setSelectedTrelloListId] = useState('');
+    const [trelloStatus, setTrelloStatus] = useState({ loading: false, message: '' });
+
     useLayoutEffect(() => {
         if (isOpen) {
             const originalStyle = window.getComputedStyle(document.body).overflow;
@@ -62,9 +78,165 @@ const SummaryModal = ({
         }
     }, [summary, setSummaryView]);
 
+    useEffect(() => {
+        if (isOpen && summaryView === 'shop' && config.trelloApiKey && config.trelloApiToken && config.trelloBoardId) {
+            setTrelloStatus({ loading: true, message: '' });
+            setTrelloLists([]);
+            fetch(`https://api.trello.com/1/boards/${config.trelloBoardId}/lists?key=${config.trelloApiKey}&token=${config.trelloApiToken}`)
+                .then(response => {
+                    if (!response.ok) throw new Error('Failed to fetch');
+                    return response.json();
+                })
+                .then(data => {
+                    if (Array.isArray(data)) {
+                        setTrelloLists(data);
+                        if (data.length > 0) {
+                            setSelectedTrelloListId(data[0].id);
+                        }
+                    }
+                    setTrelloStatus({ loading: false, message: '' });
+                })
+                .catch(() => {
+                    setTrelloStatus({ loading: false, message: t(language, 'trelloErrorFetching') });
+                });
+        }
+    }, [isOpen, summaryView, config.trelloApiKey, config.trelloApiToken, config.trelloBoardId, language]);
+    
+    const handleDownloadShopPDF = () => {
+        if (!summary) return;
+        const updatedSummary = { ...summary, totalPrice: parseFloat(finalPrice) || summary.totalPrice, remarksForFactoryShop };
+        const blob = generateShopPdf(updatedSummary, language);
+        downloadBlob(blob, t(language, 'shopPdfFilename'));
+    };
+
+    const handleDownloadCustomerPDF = () => {
+        if (!summary) return;
+        const updatedSummary = { ...summary, totalPrice: parseFloat(finalPrice) || summary.totalPrice, remarksForCustomer };
+        const blob = generateCustomerPdf(updatedSummary, language);
+        downloadBlob(blob, t(language, 'customerPdfFilename'));
+    };
+
+    const handleDownloadFactoryPDF = () => {
+        if (!summary) return;
+        const updatedSummary = { ...summary, remarksForFactoryShop };
+        const blob = generateFactoryPdf(updatedSummary, language);
+        downloadBlob(blob, t(language, 'factoryPdfFilename'));
+    };
+    
+    const handleCreateTrelloCard = async () => {
+        if (!summary || !selectedTrelloListId) return;
+    
+        setTrelloStatus({ loading: true, message: t(language, 'creatingTrelloCard') });
+    
+        const cardName = `${t(language, 'jewelryTypeLabel')}: ${t(language, summary.jewelryType)} - ${t(language, 'customerNameLabel')}: ${summary.customerName || 'N/A'}`;
+        
+        const cardDesc = `
+### ${t(language, 'quotation')} for ${summary.customerName || 'Customer'}
+
+**${t(language, 'pdfProjectDetailsTitle')}**
+- **${t(language, 'pdfJewelryTypeLabel')}** ${t(language, summary.jewelryType)}
+- **${t(language, 'pdfSizeLabel')}** ${summary.sizeDetails || 'N/A'}
+- **${t(language, 'pdfMaterialLabel')}** ${summary.fullMaterialName}${summary.showGramsInQuote ? ` (${summary.grams || 0}${t(language, 'gramsUnit')})` : ''}
+
+**Stones**
+- **${t(language, 'pdfMainStoneLabel')}**
+> ${summary.mainStoneRemarks || 'N/A'}
+- **${t(language, 'pdfSideStoneLabel')}**
+> ${summary.sideStonesRemarks.replace(/\n/g, '\n> ') || 'N/A'}
+
+---
+
+### **${t(language, 'totalCustomerLabel')} ${formatCurrency(parseFloat(finalPrice) || summary.totalPrice, language)}**
+
+---
+
+### Shop Details
+- **Subtotal:** ${formatCurrency(summary.subtotal, language)}
+- **Margin (${summary.marginPercentage.toFixed(2)}%):** ${formatCurrency(summary.marginAmount, language)}
+- **Total Cost:** ${formatCurrency(summary.subtotal + summary.marginAmount, language)}
+
+---
+
+**${t(language, 'remarksForFactoryShopLabel')}**
+> ${remarksForFactoryShop || 'N/A'}
+
+**${t(language, 'remarksForCustomerLabel')}**
+> ${remarksForCustomer || 'N/A'}
+        `;
+    
+        const cardData = {
+            name: cardName,
+            desc: cardDesc,
+            idList: selectedTrelloListId,
+            key: config.trelloApiKey,
+            token: config.trelloApiToken,
+        };
+        
+        const dataURLtoBlob = (dataurl) => {
+            const arr = dataurl.split(',');
+            const mime = arr[0].match(/:(.*?);/)[1];
+            const bstr = atob(arr[1]);
+            let n = bstr.length;
+            const u8arr = new Uint8Array(n);
+            while(n--){
+                u8arr[n] = bstr.charCodeAt(n);
+            }
+            return new Blob([u8arr], {type:mime});
+        };
+    
+        try {
+            const cardResponse = await fetch(`https://api.trello.com/1/cards`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(cardData)
+            });
+    
+            if (!cardResponse.ok) throw new Error('Failed to create Trello card');
+            const newCard = await cardResponse.json();
+            const cardId = newCard.id;
+    
+            setTrelloStatus({ loading: true, message: t(language, 'uploadingAttachments') });
+    
+            const attachmentsToUpload = [];
+            // Images
+            summary.images.forEach((image, index) => {
+                const blob = dataURLtoBlob(image.src);
+                if(blob) attachmentsToUpload.push({ blob, name: `reference-${index + 1}.jpeg` });
+            });
+    
+            // PDFs
+            const updatedSummary = { ...summary, totalPrice: parseFloat(finalPrice) || summary.totalPrice, remarksForFactoryShop, remarksForCustomer };
+            attachmentsToUpload.push({ blob: generateCustomerPdf(updatedSummary, language), name: t(language, 'customerPdfFilename') });
+            attachmentsToUpload.push({ blob: generateShopPdf(updatedSummary, language), name: t(language, 'shopPdfFilename') });
+            attachmentsToUpload.push({ blob: generateFactoryPdf(updatedSummary, language), name: t(language, 'factoryPdfFilename') });
+    
+            const uploadPromises = attachmentsToUpload.map(attachment => {
+                const formData = new FormData();
+                formData.append('key', config.trelloApiKey);
+                formData.append('token', config.trelloApiToken);
+                formData.append('file', attachment.blob, attachment.name);
+    
+                return fetch(`https://api.trello.com/1/cards/${cardId}/attachments`, {
+                    method: 'POST',
+                    body: formData,
+                });
+            });
+    
+            await Promise.all(uploadPromises);
+    
+            setTrelloStatus({ loading: false, message: t(language, 'trelloCardCreated') });
+            setTimeout(() => setTrelloStatus({ loading: false, message: '' }), 3000);
+        } catch (error) {
+            console.error('Error creating Trello card:', error);
+            setTrelloStatus({ loading: false, message: t(language, 'trelloCreationFailed') });
+        }
+    };
+
     if (!isOpen || !summary) {
         return null;
     }
+
+    const trelloConfigured = config.trelloApiKey && config.trelloApiToken && config.trelloBoardId;
 
     return (
         <div className="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="summary-heading" onClick={onClose}>
@@ -135,7 +307,7 @@ const SummaryModal = ({
                     <div className="download-grid">
                         {summaryView === 'shop' ? (
                             <>
-                           <button type="button" className="download-btn customer" onClick={handleDownloadCustomerPDF}><span>{t(language, 'downloadCustomerPDF')}</span></button>
+                                <button type="button" className="download-btn shop" onClick={handleDownloadShopPDF}><span>{t(language, 'downloadShopPDF')}</span></button>
                                 <button type="button" className="download-btn factory" onClick={handleDownloadFactoryPDF}><span>{t(language, 'downloadFactoryPDF')}</span></button>
                             </>
                         ) : (
@@ -151,6 +323,33 @@ const SummaryModal = ({
                             </>
                         )}
                     </div>
+                    {summaryView === 'shop' && trelloConfigured && (
+                        <div className="trello-section">
+                            <h4>{t(language, 'trelloIntegration')}</h4>
+                            <div className="form-group">
+                                <label htmlFor="trelloList">{t(language, 'trelloList')}</label>
+                                <select 
+                                    id="trelloList"
+                                    value={selectedTrelloListId} 
+                                    onChange={e => setSelectedTrelloListId(e.target.value)}
+                                    disabled={trelloStatus.loading || trelloLists.length === 0}
+                                >
+                                    {trelloLists.length === 0 && <option>{trelloStatus.loading ? 'Loading...' : (trelloStatus.message || 'No lists found')}</option>}
+                                    {trelloLists.map(list => (
+                                        <option key={list.id} value={list.id}>{list.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <button 
+                                type="button" 
+                                className="download-btn trello" 
+                                onClick={handleCreateTrelloCard} 
+                                disabled={trelloStatus.loading || !selectedTrelloListId}
+                            >
+                                {trelloStatus.loading ? trelloStatus.message : (trelloStatus.message && trelloStatus.message !== t(language, 'trelloErrorFetching') ? trelloStatus.message : t(language, 'createTrelloCard'))}
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

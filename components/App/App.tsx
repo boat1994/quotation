@@ -1,3 +1,5 @@
+
+
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -11,7 +13,6 @@ import {
   materialColorKeys,
 } from '../../constants.js';
 import { calculateCosts } from '../../utils.js';
-import { generateShopPdf, generateCustomerPdf, generateFactoryPdf } from '../../pdf.js';
 import { t } from '../../i18n.js';
 import { logoBase64 } from '../../logo_base64.js';
 import LockScreen from '../LockScreen/LockScreen.js';
@@ -52,6 +53,9 @@ function App() {
   const [config, setConfig] = useState({
     materialPrices: defaultMaterialPrices,
     settingCosts: defaultSettingCosts,
+    trelloApiKey: '',
+    trelloApiToken: '',
+    trelloBoardId: '',
   });
 
   const [isLocked, setIsLocked] = useState(true);
@@ -111,6 +115,9 @@ function App() {
       setConfig({
         materialPrices: { ...defaultMaterialPrices, ...parsedConfig.materialPrices },
         settingCosts: { ...defaultSettingCosts, ...parsedConfig.settingCosts },
+        trelloApiKey: parsedConfig.trelloApiKey || 'eef5180b694a3948658d373b0cbe9ddf',
+        trelloApiToken: parsedConfig.trelloApiToken || '',
+        trelloBoardId: parsedConfig.trelloBoardId || '',
       });
     }
   }, []);
@@ -146,7 +153,16 @@ function App() {
                     if (typeof reader.result === 'string') {
                         const img = new Image();
                         img.onload = () => {
-                            resolve({ src: reader.result as string, width: img.width, height: img.height });
+                            const canvas = document.createElement('canvas');
+                            const ctx = canvas.getContext('2d');
+                            if (!ctx) {
+                                return reject(new Error('Could not get canvas context.'));
+                            }
+                            canvas.width = img.width;
+                            canvas.height = img.height;
+                            ctx.drawImage(img, 0, 0);
+                            const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+                            resolve({ src: dataUrl, width: img.width, height: img.height });
                         };
                         img.onerror = reject;
                         img.src = reader.result as string;
@@ -184,24 +200,6 @@ function App() {
     setSummary(summaryData);
     setFinalPrice(summaryData.totalPrice.toFixed(2));
     setIsModalOpen(true);
-  };
-  
-  const handleDownloadShopPDF = () => {
-    if (!summary) return;
-    const updatedSummary = { ...summary, totalPrice: parseFloat(finalPrice) || summary.totalPrice, remarksForFactoryShop };
-    generateShopPdf(updatedSummary, language);
-  };
-
-  const handleDownloadCustomerPDF = () => {
-    if (!summary) return;
-    const updatedSummary = { ...summary, totalPrice: parseFloat(finalPrice) || summary.totalPrice, remarksForCustomer };
-    generateCustomerPdf(updatedSummary, language);
-  };
-
-  const handleDownloadFactoryPDF = () => {
-    if (!summary) return;
-    const updatedSummary = { ...summary, remarksForFactoryShop };
-    generateFactoryPdf(updatedSummary, language);
   };
 
   const handleCopyToClipboard = () => {
@@ -382,12 +380,10 @@ function App() {
           setRemarksForFactoryShop={setRemarksForFactoryShop}
           remarksForCustomer={remarksForCustomer}
           setRemarksForCustomer={setRemarksForCustomer}
-          handleDownloadShopPDF={handleDownloadShopPDF}
-          handleDownloadCustomerPDF={handleDownloadCustomerPDF}
-          handleDownloadFactoryPDF={handleDownloadFactoryPDF}
           handleCopyToClipboard={handleCopyToClipboard}
           isCopied={isCopied}
           language={language}
+          config={config}
       />
 
       <PreferencesModal 

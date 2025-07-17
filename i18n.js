@@ -1,6 +1,5 @@
 
 
-
 export const translations = {
   en: {
     // App
@@ -74,6 +73,19 @@ export const translations = {
     settingCostsLabel: 'Setting Costs',
     mainStoneSettingCostLabel: 'Main Stone (per project)',
     sideStoneSettingCostLabel: 'Side Stone (per stone)',
+
+    // Trello Integration
+    trelloIntegration: 'Trello Integration',
+    trelloApiKey: 'Trello API Key',
+    trelloApiToken: 'Trello API Token',
+    trelloBoardId: 'Trello Board ID',
+    trelloList: 'Trello List',
+    createTrelloCard: 'Create Trello Card',
+    creatingTrelloCard: 'Creating...',
+    uploadingAttachments: 'Uploading attachments...',
+    trelloCardCreated: 'Card Created!',
+    trelloCreationFailed: 'Creation Failed.',
+    trelloErrorFetching: 'Error fetching lists.',
 
     // PDF
     shopPdfTitle: 'Quotation (For Shop)',
@@ -266,6 +278,19 @@ export const translations = {
     settingCostsLabel: 'ค่าฝัง',
     mainStoneSettingCostLabel: 'เพชรยอด (ต่อโปรเจค)',
     sideStoneSettingCostLabel: 'เพชรบ่า (ต่อเม็ด)',
+
+    // Trello Integration
+    trelloIntegration: 'เชื่อมต่อ Trello',
+    trelloApiKey: 'Trello API Key',
+    trelloApiToken: 'Trello API Token',
+    trelloBoardId: 'Trello Board ID',
+    trelloList: 'ลิสต์ใน Trello',
+    createTrelloCard: 'สร้างการ์ด Trello',
+    creatingTrelloCard: 'กำลังสร้าง...',
+    uploadingAttachments: 'กำลังอัปโหลดไฟล์แนบ...',
+    trelloCardCreated: 'สร้างการ์ดแล้ว!',
+    trelloCreationFailed: 'สร้างไม่สำเร็จ',
+    trelloErrorFetching: 'ดึงข้อมูลลิสต์ไม่ได้',
     
     // PDF
     shopPdfTitle: 'ใบเสนอราคา (สำหรับร้านค้า)',
