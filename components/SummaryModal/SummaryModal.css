@@ -1,0 +1,301 @@
+/* Modal styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 1rem;
+    animation: fadeIn 0.3s ease;
+}
+
+.modal-content {
+    background: var(--summary-bg);
+    padding: 2.5rem;
+    margin-top: 3rem;
+    margin-bottom: 3rem;
+    border-radius: 16px;
+    border: 1px solid var(--summary-border);
+    box-shadow: 0 8px 32px var(--shadow-color);
+    width: 100%;
+    max-width: 650px;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    animation: fadeIn 0.3s ease, slideIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+    from { transform: translateY(20px); }
+    to { transform: translateY(0); }
+}
+
+.modal-back-btn {
+    /* Reset generic button styles */
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    text-align: left;
+    width: auto;
+    
+    /* New styles */
+    color: var(--text-color);
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    margin: -1rem 0 1.5rem 0;
+    transition: color 0.2s;
+}
+
+.modal-back-btn:hover {
+    color: var(--primary-color);
+    text-decoration: underline;
+    /* Reset hover effects from generic button */
+    background: transparent;
+    transform: none;
+    box-shadow: none;
+}
+
+
+/* Summary section (inside modal) */
+.summary {
+  animation: none; /* Modal handles animation */
+}
+
+.modal-content h2 {
+  text-align: left;
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  color: var(--primary-color);
+  font-weight: 600;
+  font-size: 1.5rem;
+}
+
+.summary-details {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.summary-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  text-align: left;
+  padding-bottom: 1rem;
+  border-bottom: 1px dashed var(--border-color);
+}
+
+.summary-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.summary-item span:first-of-type {
+  font-weight: 500;
+}
+
+.summary-item span:last-of-type {
+  font-weight: 600;
+}
+
+.summary-subtotal {
+    padding-top: 1rem;
+    margin-top: 1rem;
+    border-top: 1px solid var(--border-color);
+    border-bottom: none;
+    font-weight: bold;
+}
+
+.item-remarks {
+  display: block;
+  font-size: 0.85rem;
+  color: #a0a0a0;
+  margin-top: 4px;
+  max-width: 300px; /* Prevent long remarks from breaking layout */
+}
+
+.total-price-group {
+  margin: 1.5rem 0 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 2px solid var(--primary-color);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+}
+
+.total-price-group label {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  width: 100%;
+}
+
+.total-price-group input {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  text-align: left;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  width: 100%;
+  background-color: var(--container-bg);
+}
+
+/* Remarks Section */
+.remarks-section {
+  margin-top: 2.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Download Button */
+.download-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.download-btn {
+  width: 100%;
+  padding: 0.9rem;
+  border: 2px solid var(--primary-color);
+  font-size: 1rem;
+  margin-top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.download-btn svg {
+    width: 1em;
+    height: 1em;
+    flex-shrink: 0;
+}
+
+.download-btn.shop {
+    background-color: var(--primary-color);
+    color: var(--button-text);
+}
+.download-btn.shop:hover {
+    background-color: transparent;
+    color: var(--primary-color);
+}
+
+.download-btn.customer {
+    background-color: transparent;
+    color: var(--primary-color);
+}
+.download-btn.customer:hover {
+    background-color: var(--primary-color);
+    color: var(--button-text);
+}
+
+.download-btn.factory {
+    background-color: var(--border-color);
+    color: var(--text-color);
+    border-color: var(--border-color);
+}
+
+.download-btn.factory:hover {
+    background-color: var(--summary-bg);
+    border-color: var(--summary-border);
+    color: var(--primary-color);
+}
+
+.download-btn.copy {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+    color: white;
+}
+.download-btn.copy:hover:not(:disabled) {
+    background-color: #0b5ed7;
+    border-color: #0a58ca;
+}
+.download-btn.copy:disabled {
+    background-color: #198754;
+    border-color: #198754;
+    cursor: default;
+    opacity: 1;
+    transform: none;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+
+/* View Switcher */
+.view-switcher {
+    display: flex;
+    margin-bottom: 2rem;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+}
+.view-switcher button {
+    flex: 1;
+    margin: 0;
+    border-radius: 0;
+    background: transparent;
+    color: var(--text-color);
+    font-size: 1rem;
+    font-weight: 500;
+    box-shadow: none;
+    border: none;
+    padding: 0.75rem;
+}
+.view-switcher button:hover {
+    background: var(--secondary-color);
+    transform: none;
+    box-shadow: none;
+}
+.view-switcher button.active {
+    background: var(--primary-color);
+    color: var(--button-text);
+}
+
+/* Customer View */
+.customer-spec-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    text-align: left;
+    margin-bottom: 2rem;
+}
+.customer-spec-item {
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px dashed var(--border-color);
+}
+.customer-spec-item:last-child {
+    border: none;
+}
+.spec-label {
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-bottom: 0.25rem;
+}
+.spec-value {
+    color: #c0c0c0;
+}

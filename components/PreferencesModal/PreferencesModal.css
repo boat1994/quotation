@@ -1,0 +1,113 @@
+/* Modal styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 1rem;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal-content {
+    background: var(--summary-bg);
+    padding: 2.5rem;
+    margin-top: 3rem;
+    margin-bottom: 3rem;
+    border-radius: 16px;
+    border: 1px solid var(--summary-border);
+    box-shadow: 0 8px 32px var(--shadow-color);
+    width: 100%;
+    max-width: 650px;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    animation: fadeIn 0.3s ease, slideIn 0.4s ease;
+}
+
+@keyframes slideIn {
+    from { transform: translateY(20px); }
+    to { transform: translateY(0); }
+}
+
+.modal-content h2 {
+  text-align: left;
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  color: var(--primary-color);
+  font-weight: 600;
+  font-size: 1.5rem;
+}
+
+/* Preferences Modal Specifics */
+.config-section {
+  margin-bottom: 2.5rem;
+}
+.config-section h3 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border-color);
+  font-weight: 500;
+}
+.config-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+}
+.config-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.config-item label {
+  font-size: 0.9rem;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-color);
+}
+.modal-actions button {
+  margin-top: 0;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  box-shadow: none;
+}
+.modal-actions button:hover {
+  transform: none;
+  box-shadow: none;
+}
+.save-btn {
+  background: var(--primary-color);
+  color: var(--button-text);
+}
+.save-btn:hover {
+  background: #e0e0e0;
+}
+.cancel-btn {
+  background: var(--secondary-color);
+  color: var(--text-color);
+}
+.cancel-btn:hover {
+  background: #4a4a4a;
+}

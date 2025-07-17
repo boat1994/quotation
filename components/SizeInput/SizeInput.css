@@ -1,0 +1,13 @@
+/* Size Input */
+.size-grid-group {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.5rem;
+    align-items: center;
+}
+  
+.size-unit-label {
+    color: #a0a0a0;
+    font-size: 1rem;
+    padding-right: 0.5rem;
+}
