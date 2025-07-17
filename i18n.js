@@ -208,7 +208,7 @@ export const translations = {
     quotation: 'ใบเสนอราคา',
     materialPricePerGramLabel: 'ราคาวัสดุ (ต่อกรัม)',
     totalMaterialCostLabel: 'ราคารวมวัสดุ',
-    lossLabel: '(+15% กําเหน็จ)',
+    lossLabel: '(+15% ซิ)',
     sideStonesCostLabel: 'Side stones',
     settingCostLabel: 'ค่าฝัง',
     subtotalLabel: 'ยอดรวมย่อย',
