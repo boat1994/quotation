@@ -80,10 +80,10 @@ const SummaryModal = ({
     }, [isOpen, onClose]);
     
     useEffect(() => {
-        if (summary) {
+        if (isOpen) {
             setSummaryView('shop');
         }
-    }, [summary, setSummaryView]);
+    }, [isOpen, setSummaryView]);
 
     useEffect(() => {
         if (isOpen && summaryView === 'shop' && config.trelloApiKey && config.trelloApiToken && config.trelloBoardId) {
