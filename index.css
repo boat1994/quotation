@@ -871,3 +871,108 @@ button:active {
 .cancel-btn:hover {
   background: #4a4a4a;
 }
+
+/* Lock Screen */
+.lock-screen-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: var(--container-bg);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  color: var(--text-color);
+  padding: 2rem;
+  box-sizing: border-box;
+}
+
+.pin-prompt {
+  font-size: 1.5rem;
+  font-weight: 400;
+  margin-bottom: 2rem;
+}
+
+.pin-dots-container {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 4rem;
+  height: 20px;
+}
+
+.pin-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid var(--border-color);
+  transition: background-color 0.2s ease-in-out, transform 0.2s;
+}
+
+.pin-dot.filled {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  max-width: 300px;
+  width: 100%;
+}
+
+.keypad-btn {
+  /* Reset button styles */
+  border: none;
+  margin: 0;
+  padding: 0;
+  box-shadow: none;
+
+  /* New styles */
+  font-size: 2rem;
+  font-weight: 300;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--primary-color);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  place-self: center;
+}
+
+.keypad-btn:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  transform: none; /* Override default button hover */
+  box-shadow: none;
+}
+.keypad-btn:active {
+  background-color: rgba(255, 255, 255, 0.3);
+  transform: scale(0.95);
+  box-shadow: none;
+}
+
+.keypad-btn.action {
+  background-color: transparent;
+}
+.keypad-btn.action svg {
+    stroke: var(--primary-color);
+}
+
+/* Shake animation for error */
+@keyframes shake {
+  10%, 90% { transform: translateX(-1px); }
+  20%, 80% { transform: translateX(2px); }
+  30%, 50%, 70% { transform: translateX(-4px); }
+  40%, 60% { transform: translateX(4px); }
+}
+
+.shake {
+  animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
+}

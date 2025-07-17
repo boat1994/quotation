@@ -501,6 +501,11 @@ function App() {
     settingCosts: defaultSettingCosts,
   });
 
+  const [isLocked, setIsLocked] = useState(true);
+  const [pinInput, setPinInput] = useState('');
+  const [pinError, setPinError] = useState(false);
+  const CORRECT_PIN = '151515';
+
 
   type Stone = ReturnType<typeof getInitialStoneState>;
 
@@ -511,6 +516,43 @@ function App() {
   const [finalPrice, setFinalPrice] = useState('');
   const [remarksForFactoryShop, setRemarksForFactoryShop] = useState('');
   const [remarksForCustomer, setRemarksForCustomer] = useState('');
+
+  useEffect(() => {
+    const unlockExpiry = localStorage.getItem('unlockExpiry');
+    if (unlockExpiry && new Date().getTime() < parseInt(unlockExpiry, 10)) {
+        setIsLocked(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (pinError) return;
+
+    if (pinInput.length === CORRECT_PIN.length) {
+        if (pinInput === CORRECT_PIN) {
+            const oneDay = 24 * 60 * 60 * 1000;
+            const expiry = new Date().getTime() + oneDay;
+            localStorage.setItem('unlockExpiry', expiry.toString());
+            setIsLocked(false);
+        } else {
+            setPinError(true);
+            setTimeout(() => {
+                setPinInput('');
+                setPinError(false);
+            }, 800);
+        }
+    }
+  }, [pinInput, pinError]);
+
+  const handlePinKeyPress = (key: string) => {
+    if (pinError || pinInput.length >= CORRECT_PIN.length) return;
+    setPinInput(pinInput + key);
+  };
+
+  const handlePinDelete = () => {
+    if (pinError) return;
+    setPinInput(pinInput.slice(0, -1));
+  };
+
 
   useEffect(() => {
     const savedConfig = localStorage.getItem('jewelryConfig');
@@ -724,6 +766,34 @@ function App() {
     }
   };
   
+  if (isLocked) {
+    return (
+        <div className="lock-screen-container">
+            <h2 className="pin-prompt">{t(language, 'enterPinPrompt')}</h2>
+            <div className={`pin-dots-container ${pinError ? 'shake' : ''}`}>
+                {Array.from({ length: CORRECT_PIN.length }).map((_, index) => (
+                    <div key={index} className={`pin-dot ${index < pinInput.length ? 'filled' : ''}`}></div>
+                ))}
+            </div>
+            <div className="keypad">
+                {'123456789'.split('').map(key => (
+                    <button key={key} onClick={() => handlePinKeyPress(key)} className="keypad-btn">
+                        {key}
+                    </button>
+                ))}
+                <div />
+                <button onClick={() => handlePinKeyPress('0')} className="keypad-btn">0</button>
+                <button onClick={handlePinDelete} className="keypad-btn action">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path>
+                    <line x1="18" y1="9" x2="12" y2="15"></line>
+                    <line x1="12" y1="9" x2="18" y2="15"></line>
+                  </svg>
+                </button>
+            </div>
+        </div>
+    );
+  }
 
   return (
     <main className="container">

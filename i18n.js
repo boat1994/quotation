@@ -190,6 +190,9 @@ export const translations = {
     polish: 'Polish',
     diameterLabel: 'Diameter',
     pricePerCaratLabel: 'Price per Carat',
+
+    // PIN Unlock
+    enterPinPrompt: 'Enter PIN',
   },
   th: {
     // App
@@ -378,6 +381,9 @@ export const translations = {
     polish: 'การขัดเงา',
     diameterLabel: 'ขนาด',
     pricePerCaratLabel: 'ราคาต่อกะรัต',
+
+    // PIN Unlock
+    enterPinPrompt: 'ใส่รหัส PIN',
   }
 };
 
