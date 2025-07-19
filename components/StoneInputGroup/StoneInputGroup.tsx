@@ -134,6 +134,14 @@ const StoneInputGroup = ({ label, stone, onStoneChange, idPrefix, isSideStone = 
             </div>
           </div>
         )}
+        <input
+            type="text"
+            value={stone.additionalRemarks}
+            onChange={(e) => handleInputChange('additionalRemarks', e.target.value)}
+            placeholder={t(lang, 'additionalRemarksPlaceholder')}
+            aria-label={`${label} additional remarks`}
+            className="additional-remarks-input"
+        />
       </div>
     );
   };

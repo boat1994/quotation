@@ -13,6 +13,8 @@ export const getStoneRemarks = (stone, lang = 'en') => {
     const qty = typeof stone.quantity === 'string' ? parseInt(stone.quantity, 10) : stone.quantity;
     const qtyText = (qty > 1 && isFinite(qty)) ? ` x ${qty}` : '';
     
+    let autoRemarks = '';
+    
     if (stone.calculationMode === 'byDiameter') {
         const conversion = diamondConversionTableLimited.find(d => d.diameter_mm === String(stone.diameter));
         let baseRemark;
@@ -28,47 +30,58 @@ export const getStoneRemarks = (stone, lang = 'en') => {
             `${t(lang, 'clarity')}: ${t(lang, stone.clarity)}`
         ];
 
-        return `${[baseRemark, ...details].join(', ')}${qtyText}`;
+        autoRemarks = [baseRemark, ...details].join(', ');
     }
 
     if (stone.calculationMode === 'details') {
-        if (!stone.weight) return `${t(lang, 'waitingForDetails')}${qtyText}`;
-        
-        const parts = [
-            t(lang, stone.shape),
-            `${stone.weight || '0'} ${t(lang, 'carat')}`,
-            `${t(lang, 'color')}: ${stone.color}`,
-            `${t(lang, 'cut')}: ${t(lang, stone.cut)}`,
-            `${t(lang, 'clarity')}: ${t(lang, stone.clarity)}`,
-            `${t(lang, 'polish')}: ${t(lang, stone.polish)}`
-        ];
-        
-        return `${parts.join(', ')}${qtyText}`;
+        if (!stone.weight) {
+            autoRemarks = t(lang, 'waitingForDetails');
+        } else {
+            const parts = [
+                t(lang, stone.shape),
+                `${stone.weight || '0'} ${t(lang, 'carat')}`,
+                `${t(lang, 'color')}: ${stone.color}`,
+                `${t(lang, 'cut')}: ${t(lang, stone.cut)}`,
+                `${t(lang, 'clarity')}: ${t(lang, stone.clarity)}`,
+                `${t(lang, 'polish')}: ${t(lang, stone.polish)}`
+            ];
+            autoRemarks = parts.join(', ');
+        }
     }
-    return stone.manualRemarks ? `${stone.manualRemarks}${qtyText}` : '';
+
+    if (stone.calculationMode === 'manual') {
+        autoRemarks = stone.manualRemarks || '';
+    }
+    
+    const finalRemarks = [autoRemarks, stone.additionalRemarks].filter(Boolean).join('\n');
+    return finalRemarks ? `${finalRemarks}${qtyText}` : '';
 };
 
 export const getStoneRemarksForCopy = (stone, lang = 'en') => {
     const qty = typeof stone.quantity === 'string' ? parseInt(stone.quantity, 10) : stone.quantity;
     const qtyText = (qty > 1 && isFinite(qty)) ? ` x ${qty}` : '';
 
+    let baseRemark = '';
     if (stone.calculationMode === 'byDiameter') {
         const shapeText = t(lang, 'round');
-        return `${shapeText} ${stone.diameter}${t(lang, 'mmUnit')}${qtyText}`;
+        baseRemark = `${shapeText} ${stone.diameter}${t(lang, 'mmUnit')}`;
+    } else if (stone.calculationMode === 'details') {
+        if (!stone.weight) {
+            baseRemark = '';
+        } else {
+            const parts = [
+                t(lang, stone.shape),
+                `${stone.weight || '0'} ${t(lang, 'carat')}`
+            ];
+            baseRemark = parts.join(' ');
+        }
+    } else { // manual mode
+        baseRemark = stone.manualRemarks || '';
     }
 
-    if (stone.calculationMode === 'details') {
-        if (!stone.weight) return '';
-        
-        const parts = [
-            t(lang, stone.shape),
-            `${stone.weight || '0'} ${t(lang, 'carat')}`
-        ];
-        
-        return `${parts.join(' ')}${qtyText}`;
-    }
-
-    return stone.manualRemarks ? `${stone.manualRemarks}${qtyText}` : '';
+    const finalRemarks = [baseRemark, stone.additionalRemarks].filter(Boolean).join(' ');
+    
+    return finalRemarks ? `${finalRemarks}${qtyText}` : '';
 };
 
 export const calculateCosts = ({
@@ -78,6 +91,7 @@ export const calculateCosts = ({
   images,
   material,
   materialColor,
+  platingColor,
   grams,
   showGramsInQuote,
   cadCost,
@@ -120,7 +134,9 @@ export const calculateCosts = ({
 
     const isColorable = colorableMaterialKeys.includes(material);
     let fullMaterialName;
-    if (isColorable) {
+    if (material === 'silver925') {
+        fullMaterialName = `${t(language, material)} (${t(language, platingColor)})`;
+    } else if (isColorable) {
         const materialTextEn = t('en', material); // e.g. "Gold 14k"
         const qualityMatch = materialTextEn.match(/\d+k/);
         const quality = qualityMatch ? qualityMatch[0] : ''; // "14k"

@@ -137,6 +137,10 @@
   }
 }
 
+.additional-remarks-input {
+    margin-top: 0.75rem;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;

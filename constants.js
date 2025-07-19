@@ -1,4 +1,5 @@
 
+
 export const CORRECT_PIN = '151515';
 
 
@@ -19,6 +20,7 @@ export const materialKeys = ['silver925', 'gold9k', 'gold14k', 'gold18k', 'pt950
 
 export const colorableMaterialKeys = ['gold9k', 'gold14k', 'gold18k'];
 export const materialColorKeys = ['yellowGold', 'whiteGold', 'roseGold'];
+export const platingColorKeys = ['rhodium', 'yellowGoldPlating', 'roseGoldPlating'];
 
 export const jewelryTypeKeys = ['ring', 'bracelet', 'necklace', 'earring', 'pendant'];
 export const earringSizeKeys = ['s', 'm', 'l', 'xl'];
@@ -81,6 +83,7 @@ export const getInitialStoneState = () => ({
   clarity: 'VVS',
   polish: 'EX',
   manualRemarks: '',
+  additionalRemarks: '',
   quantity: 1,
   id: `main-${Date.now()}`,
   diameter: '1.00',

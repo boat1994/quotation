@@ -1,6 +1,5 @@
 
 
-
 import jsPDF from 'jspdf';
 import { formatCurrency } from './utils.js';
 import { sarabunBase64 } from './font.js';
@@ -25,8 +24,15 @@ const addImagesToPdf = (doc, images, lang) => {
     images.forEach((image) => {
         const aspectRatio = image.height / image.width;
         const renderedHeight = usableWidth * aspectRatio;
+        let totalBlockHeight = renderedHeight;
 
-        if (yPos + renderedHeight > pageHeight - margin) {
+        if (image.description) {
+            doc.setFontSize(9);
+            const splitDesc = doc.splitTextToSize(image.description, usableWidth);
+            totalBlockHeight += splitDesc.length * 4 + 2; // description height + padding
+        }
+
+        if (yPos + totalBlockHeight > pageHeight - margin) {
             doc.addPage();
             doc.setFont('Sarabun'); // Ensure font is set for new page
             doc.setFontSize(16);
@@ -36,7 +42,17 @@ const addImagesToPdf = (doc, images, lang) => {
         
         const imageType = image.src.split(';')[0].split('/')[1].toUpperCase();
         doc.addImage(image.src, imageType, margin, yPos, usableWidth, renderedHeight);
-        yPos += renderedHeight + imageGap;
+        yPos += renderedHeight;
+
+        if (image.description) {
+            yPos += 4;
+            doc.setFontSize(9);
+            const splitDesc = doc.splitTextToSize(image.description, usableWidth);
+            doc.text(splitDesc, margin, yPos);
+            yPos += splitDesc.length * 4 + 2;
+        }
+
+        yPos += imageGap;
     });
 };
 

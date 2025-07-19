@@ -11,6 +11,7 @@ import {
   jewelryTypeKeys,
   colorableMaterialKeys,
   materialColorKeys,
+  platingColorKeys,
   CORRECT_PIN,
 } from '../../constants.js';
 import { calculateCosts } from '../../utils.js';
@@ -30,6 +31,7 @@ export interface ImageState {
   src: string;
   width: number;
   height: number;
+  description: string;
 }
 
 type Stone = ReturnType<typeof getInitialStoneState>;
@@ -41,6 +43,7 @@ function App() {
   const [size, setSize] = useState('');
   const [material, setMaterial] = useState('gold14k');
   const [materialColor, setMaterialColor] = useState('yellowGold');
+  const [platingColor, setPlatingColor] = useState('rhodium');
   const [grams, setGrams] = useState('');
   const [showGramsInQuote, setShowGramsInQuote] = useState(true);
   const [images, setImages] = useState<ImageState[]>([]);
@@ -162,7 +165,7 @@ function App() {
                             canvas.height = img.height;
                             ctx.drawImage(img, 0, 0);
                             const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
-                            resolve({ src: dataUrl, width: img.width, height: img.height });
+                            resolve({ src: dataUrl, width: img.width, height: img.height, description: '' });
                         };
                         img.onerror = reject;
                         img.src = reader.result as string;
@@ -180,6 +183,12 @@ function App() {
     }
   };
 
+  const handleImageDescriptionChange = (index: number, description: string) => {
+    const newImages = [...images];
+    newImages[index].description = description;
+    setImages(newImages);
+  };
+
   const handleJewelryTypeChange = (e) => {
     const newType = e.target.value;
     setJewelryType(newType);
@@ -193,7 +202,7 @@ function App() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const summaryData = calculateCosts({
-        customerName, jewelryType, size, images, material, materialColor, grams, showGramsInQuote, cadCost, laborCost, margin, mainStone, sideStones, language,
+        customerName, jewelryType, size, images, material, materialColor, platingColor, grams, showGramsInQuote, cadCost, laborCost, margin, mainStone, sideStones, language,
         materialPrices: config.materialPrices,
         settingCosts: config.settingCosts,
     });
@@ -318,6 +327,19 @@ function App() {
                 </div>
             </div>
           )}
+          {material === 'silver925' && (
+            <div className="material-color-options">
+                <label className="radio-group-label">{t(language, 'platingColorLabel')}</label>
+                <div className="radio-options-wrapper">
+                    {platingColorKeys.map(key => (
+                        <div key={key} className="radio-option">
+                            <input type="radio" id={`plating-${key}`} name="platingColor" value={key} checked={platingColor === key} onChange={e => setPlatingColor(e.target.value)} />
+                            <label htmlFor={`plating-${key}`}>{t(language, key)}</label>
+                        </div>
+                    ))}
+                </div>
+            </div>
+          )}
           <div className="radio-container">
             <label className="radio-group-label">{t(language, 'gramsVisibilityLabel')}</label>
             <div className="radio-options-wrapper">
@@ -337,7 +359,18 @@ function App() {
             <label htmlFor="images">{t(language, 'refImagesLabel')}</label>
             <input type="file" id="images" multiple accept="image/*" onChange={handleImageChange} aria-label="Reference Images" />
             <div className="image-preview-container">
-                {images.map((img, i) => <img key={i} src={img.src} alt={`preview ${i+1}`} className="image-preview" />)}
+                {images.map((img, i) => (
+                    <div key={i} className="image-preview-item">
+                        <img src={img.src} alt={`preview ${i+1}`} className="image-preview" />
+                        <input
+                            type="text"
+                            className="image-description-input"
+                            placeholder="Description"
+                            value={img.description}
+                            onChange={(e) => handleImageDescriptionChange(i, e.target.value)}
+                        />
+                    </div>
+                ))}
             </div>
         </div>
 
