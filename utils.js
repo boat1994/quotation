@@ -1,5 +1,6 @@
 
 
+
 import { diamondConversionTableLimited, colorableMaterialKeys } from './constants.js';
 import { t } from './i18n.js';
 
@@ -10,9 +11,6 @@ export const formatCurrency = (value, lang = 'en') =>
   });
 
 export const getStoneRemarks = (stone, lang = 'en') => {
-    const qty = typeof stone.quantity === 'string' ? parseInt(stone.quantity, 10) : stone.quantity;
-    const qtyText = (qty > 1 && isFinite(qty)) ? ` x ${qty}` : '';
-    
     let autoRemarks = '';
     
     if (stone.calculationMode === 'byDiameter') {
@@ -53,14 +51,20 @@ export const getStoneRemarks = (stone, lang = 'en') => {
         autoRemarks = stone.manualRemarks || '';
     }
     
-    const finalRemarks = [autoRemarks, stone.additionalRemarks].filter(Boolean).join('\n');
-    return finalRemarks ? `${finalRemarks}${qtyText}` : '';
+    const parts = [autoRemarks];
+    const qty = typeof stone.quantity === 'string' ? parseInt(stone.quantity, 10) : stone.quantity;
+    if (qty > 1 && isFinite(qty)) {
+        parts.push(`x ${qty} ${t(lang, 'pcsUnit')}`);
+    }
+
+    if (stone.additionalRemarks) {
+        parts.push(`${t(lang, 'remarksLabel')}${stone.additionalRemarks}`);
+    }
+    
+    return parts.filter(Boolean).join('\n');
 };
 
 export const getStoneRemarksForCopy = (stone, lang = 'en') => {
-    const qty = typeof stone.quantity === 'string' ? parseInt(stone.quantity, 10) : stone.quantity;
-    const qtyText = (qty > 1 && isFinite(qty)) ? ` x ${qty}` : '';
-
     let baseRemark = '';
     if (stone.calculationMode === 'byDiameter') {
         const shapeText = t(lang, 'round');
@@ -79,9 +83,17 @@ export const getStoneRemarksForCopy = (stone, lang = 'en') => {
         baseRemark = stone.manualRemarks || '';
     }
 
-    const finalRemarks = [baseRemark, stone.additionalRemarks].filter(Boolean).join(' ');
+    const parts = [baseRemark];
+    const qty = typeof stone.quantity === 'string' ? parseInt(stone.quantity, 10) : stone.quantity;
+    if (qty > 1 && isFinite(qty)) {
+        parts.push(`x ${qty} ${t(lang, 'pcsUnit')}`);
+    }
+
+    if (stone.additionalRemarks) {
+        parts.push(`${t(lang, 'remarksLabel')}${stone.additionalRemarks}`);
+    }
     
-    return finalRemarks ? `${finalRemarks}${qtyText}` : '';
+    return parts.filter(Boolean).join('\n');
 };
 
 export const calculateCosts = ({

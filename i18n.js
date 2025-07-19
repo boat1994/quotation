@@ -1,5 +1,6 @@
 
 
+
 export const translations = {
   en: {
     // App
@@ -118,9 +119,10 @@ export const translations = {
     pdfTotalEstCostLabel: 'Total Estimated Cost:',
     pdfTotalEstPriceLabel: 'Estimated Price:',
     pdfRemarksLabel: 'Remarks:',
-    shopPdfFilename: 'Quotation_Shop.pdf',
-    customerPdfFilename: 'Quotation_Customer.pdf',
-    factoryPdfFilename: 'WorkOrder.pdf',
+    remarksLabel: 'Remarks:',
+    shopPdfFilename: '[FOR SHOP] project details for k. {customerName}-{date}.pdf',
+    customerPdfFilename: '[For Customer]  Quotation for k. {customerName}-{date}.pdf',
+    factoryPdfFilename: '[Work order] {jewelryType} {material} for k. {customerName} {date}.pdf',
     
     pdfTermsTitle: 'Terms and Conditions',
     pdfPriceValidityTitle: 'Price Validity',
@@ -156,6 +158,7 @@ export const translations = {
     gramsUnit: 'g',
     mmUnit: 'mm',
     cmUnit: 'cm',
+    pcsUnit: 'Pcs',
 
     // Jewelry Types
     ring: 'Ring',
@@ -306,7 +309,7 @@ export const translations = {
     // PDF
     shopPdfTitle: 'ใบเสนอราคา (สำหรับร้านค้า)',
     customerPdfTitle: 'ใบเสนอราคา',
-    factoryPdfTitle: 'ใบสั่งผลิต',
+    factoryPdfTitle: 'Spec order',
     pdfDateLabel: 'วันที่: ',
     pdfForLabel: 'สำหรับ: ',
     pdfProjectCostTitle: 'รายละเอียดต้นทุนโครงการ',
@@ -330,9 +333,10 @@ export const translations = {
     pdfTotalEstCostLabel: 'ต้นทุนโดยประมาณ:',
     pdfTotalEstPriceLabel: 'ราคาประเมิน:',
     pdfRemarksLabel: 'หมายเหตุ:',
-    shopPdfFilename: 'ใบเสนอราคา_ร้านค้า.pdf',
-    customerPdfFilename: 'ใบเสนอราคา_ลูกค้า.pdf',
-    factoryPdfFilename: 'ใบสั่งผลิต.pdf',
+    remarksLabel: 'หมายเหตุ:',
+    shopPdfFilename: '[สำหรับร้าน] รายละเอียดโปรเจค คุณ {customerName}-{date}.pdf',
+    customerPdfFilename: '[สำหรับลูกค้า]  ใบเสนอราคา คุณ {customerName}-{date}.pdf',
+    factoryPdfFilename: '[ใบสั่งผลิต] {jewelryType} {material} คุณ {customerName}-{date}.pdf',
     
     pdfTermsTitle: 'เงื่อนไขและข้อตกลง',
     pdfPriceValidityTitle: 'การยืนราคา',
@@ -367,6 +371,7 @@ export const translations = {
     gramsUnit: 'ก',
     mmUnit: 'มม.',
     cmUnit: 'ซม.',
+    pcsUnit: 'Pcs',
     
     // Jewelry Types
     ring: 'แหวน',

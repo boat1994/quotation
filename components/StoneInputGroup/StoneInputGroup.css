@@ -2,11 +2,17 @@
 .side-stones-section {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
     padding: 1.5rem;
     border: 1px dashed var(--border-color);
     border-radius: 8px;
 }
+
+.side-stones-section > .stone-group + .stone-group {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
 .stone-group {
   position: relative;
 }
@@ -59,7 +65,7 @@
     font-weight: 600;
     font-size: 1rem;
     box-shadow: none;
-    margin-top: 0.5rem;
+    margin-top: 1.5rem;
     padding: 0.75rem;
 }
 .add-stone-btn:hover {

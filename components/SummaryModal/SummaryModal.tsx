@@ -35,6 +35,14 @@ const downloadBlob = (blob, filename) => {
     setTimeout(() => URL.revokeObjectURL(url), 100);
 };
 
+const getFormattedDate = () => {
+    const today = new Date();
+    const dd = String(today.getDate()).padStart(2, '0');
+    const mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+    const yy = String(today.getFullYear()).slice(-2);
+    return `${dd}-${mm}-${yy}`;
+};
+
 const SummaryModal = ({
     isOpen,
     onClose,
@@ -113,21 +121,35 @@ const SummaryModal = ({
         if (!summary) return;
         const updatedSummary = { ...summary, totalPrice: parseFloat(finalPrice) || summary.totalPrice, remarksForFactoryShop };
         const blob = generateShopPdf(updatedSummary, language);
-        downloadBlob(blob, t(language, 'shopPdfFilename'));
+        const date = getFormattedDate();
+        const customerName = summary.customerName || 'customer';
+        const filename = t(language, 'shopPdfFilename', { customerName, date });
+        downloadBlob(blob, filename);
     };
 
     const handleDownloadCustomerPDF = () => {
         if (!summary) return;
         const updatedSummary = { ...summary, totalPrice: parseFloat(finalPrice) || summary.totalPrice, remarksForCustomer };
         const blob = generateCustomerPdf(updatedSummary, language);
-        downloadBlob(blob, t(language, 'customerPdfFilename'));
+        const date = getFormattedDate();
+        const customerName = summary.customerName || 'customer';
+        const filename = t(language, 'customerPdfFilename', { customerName, date });
+        downloadBlob(blob, filename);
     };
 
     const handleDownloadFactoryPDF = () => {
         if (!summary) return;
         const updatedSummary = { ...summary, remarksForFactoryShop };
         const blob = generateFactoryPdf(updatedSummary, language);
-        downloadBlob(blob, t(language, 'factoryPdfFilename'));
+        const date = getFormattedDate();
+        const customerName = summary.customerName || 'customer';
+        const filename = t(language, 'factoryPdfFilename', {
+            jewelryType: t(language, summary.jewelryType),
+            material: summary.fullMaterialName,
+            customerName,
+            date,
+        });
+        downloadBlob(blob, filename);
     };
     
     const executeCreateTrelloCard = async () => {
@@ -216,9 +238,21 @@ const SummaryModal = ({
     
             // PDFs
             const updatedSummary = { ...summary, totalPrice: parseFloat(finalPrice) || summary.totalPrice, remarksForFactoryShop, remarksForCustomer };
-            attachmentsToUpload.push({ blob: generateCustomerPdf(updatedSummary, language), name: t(language, 'customerPdfFilename') });
-            attachmentsToUpload.push({ blob: generateShopPdf(updatedSummary, language), name: t(language, 'shopPdfFilename') });
-            attachmentsToUpload.push({ blob: generateFactoryPdf(updatedSummary, language), name: t(language, 'factoryPdfFilename') });
+            const date = getFormattedDate();
+            const customerName = summary.customerName || 'customer';
+
+            const customerPdfFilename = t(language, 'customerPdfFilename', { customerName, date });
+            const shopPdfFilename = t(language, 'shopPdfFilename', { customerName, date });
+            const factoryPdfFilename = t(language, 'factoryPdfFilename', {
+                jewelryType: t(language, summary.jewelryType),
+                material: summary.fullMaterialName,
+                customerName,
+                date,
+            });
+
+            attachmentsToUpload.push({ blob: generateCustomerPdf(updatedSummary, language), name: customerPdfFilename });
+            attachmentsToUpload.push({ blob: generateShopPdf(updatedSummary, language), name: shopPdfFilename });
+            attachmentsToUpload.push({ blob: generateFactoryPdf(updatedSummary, language), name: factoryPdfFilename });
     
             const uploadPromises = attachmentsToUpload.map(attachment => {
                 const formData = new FormData();

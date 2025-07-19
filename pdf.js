@@ -26,10 +26,13 @@ const addImagesToPdf = (doc, images, lang) => {
         const renderedHeight = usableWidth * aspectRatio;
         let totalBlockHeight = renderedHeight;
 
+        const descriptionLineHeight = 6;
+        const descriptionMargin = 6; // One row margin
+
         if (image.description) {
-            doc.setFontSize(9);
+            doc.setFontSize(14);
             const splitDesc = doc.splitTextToSize(image.description, usableWidth);
-            totalBlockHeight += splitDesc.length * 4 + 2; // description height + padding
+            totalBlockHeight += descriptionMargin + splitDesc.length * descriptionLineHeight + 2; // description height + padding
         }
 
         if (yPos + totalBlockHeight > pageHeight - margin) {
@@ -45,11 +48,11 @@ const addImagesToPdf = (doc, images, lang) => {
         yPos += renderedHeight;
 
         if (image.description) {
-            yPos += 4;
-            doc.setFontSize(9);
+            yPos += descriptionMargin;
+            doc.setFontSize(14);
             const splitDesc = doc.splitTextToSize(image.description, usableWidth);
             doc.text(splitDesc, margin, yPos);
-            yPos += splitDesc.length * 4 + 2;
+            yPos += splitDesc.length * descriptionLineHeight + 2;
         }
 
         yPos += imageGap;
