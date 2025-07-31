@@ -4,7 +4,7 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
  */
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   materialKeys,
   getInitialStoneState,
@@ -70,7 +70,7 @@ function App() {
   const [sideStones, setSideStones] = useState<Stone[]>([]);
 
   const [summary, setSummary] = useState<ReturnType<typeof calculateCosts> | null>(null);
-  const [finalPrice, setFinalPrice] = useState('');
+  const [finalPrice, setFinalPrice] = useState<string>('');
   const [remarksForFactoryShop, setRemarksForFactoryShop] = useState('');
   const [remarksForCustomer, setRemarksForCustomer] = useState('');
 
@@ -125,7 +125,7 @@ function App() {
     }
   }, []);
 
-  const handleSaveConfig = (newConfig) => {
+  const handleSaveConfig = (newConfig: any) => {
     setConfig(newConfig);
     localStorage.setItem('jewelryConfig', JSON.stringify(newConfig));
   };
@@ -140,7 +140,7 @@ function App() {
   };
 
   const handleSideStoneChange = (id: string, updatedStone: Stone) => {
-    setSideStones(sideStones.map(stone => stone.id === id ? updatedStone : stone));
+    setSideStones(sideStones.map(stone => (stone.id === id ? updatedStone : stone)));
   };
   
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -189,7 +189,7 @@ function App() {
     setImages(newImages);
   };
 
-  const handleJewelryTypeChange = (e) => {
+  const handleJewelryTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newType = e.target.value;
     setJewelryType(newType);
     if (newType === 'earring') {
@@ -215,7 +215,7 @@ function App() {
     if (!summary) return;
     const price = parseFloat(finalPrice) || 0;
     const deposit = price / 2;
-    const formatForCopy = (value) => value.toLocaleString(language === 'th' ? 'th-TH' : 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const formatForCopy = (value: number) => value.toLocaleString(language === 'th' ? 'th-TH' : 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     
     const parts = [];
     const customer = summary.customerName || '';
@@ -226,7 +226,7 @@ function App() {
     if (summary.sizeDetails) parts.push(t(language, 'copy_size_line_v2', { sizeDetails: summary.sizeDetails }));
     if (summary.mainStoneRemarksForCopy) parts.push(t(language, 'copy_main_stone_line_v2', { mainStoneRemarks: summary.mainStoneRemarksForCopy }));
     if (summary.sideStonesRemarksForCopy) {
-        summary.sideStonesRemarksForCopy.split('\n').forEach(line => {
+        summary.sideStonesRemarksForCopy.split('\n').forEach((line: string) => {
             if (line.trim()) parts.push(t(language, 'copy_side_stones_line_v2', { sideStonesRemarks: line }));
         });
     }
@@ -383,7 +383,7 @@ function App() {
 
         <div className="side-stones-section">
             {sideStones.map((stone, index) => (
-                <StoneInputGroup key={stone.id} label={`${t(language, 'sideStoneLabel')} ${index + 1}`} stone={stone} onStoneChange={(updatedStone) => handleSideStoneChange(stone.id, updatedStone)} idPrefix={`sideStone${index}`} isSideStone={true} onRemove={() => handleRemoveSideStone(stone.id)} lang={language}/>
+                <StoneInputGroup key={stone.id} label={`${t(language, 'sideStoneLabel')} ${index + 1}`} stone={stone} onStoneChange={(updatedStone: Stone) => handleSideStoneChange(stone.id, updatedStone)} idPrefix={`sideStone${index}`} isSideStone={true} onRemove={() => handleRemoveSideStone(stone.id)} lang={language}/>
             ))}
             <button type="button" className="add-stone-btn" onClick={handleAddSideStone}>{t(language, 'addSideStoneBtn')}</button>
         </div>
@@ -401,7 +401,7 @@ function App() {
         <button type="submit">{t(language, 'calculateBtn')}</button>
       </form>
       
-      <SummaryModal
+      {summary && <SummaryModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           summary={summary}
@@ -417,7 +417,7 @@ function App() {
           isCopied={isCopied}
           language={language}
           config={config}
-      />
+      />}
 
       <PreferencesModal 
         isOpen={isPreferencesOpen}

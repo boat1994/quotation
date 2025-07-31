@@ -1,13 +1,13 @@
 
 
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { formatCurrency } from '../../utils.js';
 import { t } from '../../i18n.js';
 import { generateShopPdf, generateCustomerPdf, generateFactoryPdf } from '../../pdf.js';
 import { CORRECT_PIN } from '../../constants.js';
 import './SummaryModal.css';
 
-const SummaryItem = ({ label, value, remarks = '', lang }) => (
+const SummaryItem = ({ label, value, remarks = '', lang }: { label: string, value: number, remarks?: string, lang: string }) => (
     <div className="summary-item">
       <div>
         <span>{label}</span>
@@ -17,14 +17,14 @@ const SummaryItem = ({ label, value, remarks = '', lang }) => (
     </div>
 );
   
-const SpecItem = ({label, value}) => (
+const SpecItem = ({label, value}: {label: string, value: string}) => (
     <div className="customer-spec-item">
       <span className="spec-label">{label}</span>
       <span className="spec-value" style={{whiteSpace: 'pre-wrap'}}>{value}</span>
     </div>
 );
 
-const downloadBlob = (blob, filename) => {
+const downloadBlob = (blob: Blob, filename: string) => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
@@ -43,6 +43,51 @@ const getFormattedDate = () => {
     return `${dd}-${mm}-${yy}`;
 };
 
+interface Summary {
+  customerName: string;
+  jewelryType: string;
+  sizeDetails: string;
+  fullMaterialName: string;
+  showGramsInQuote: boolean;
+  grams: number;
+  mainStoneRemarks: string;
+  sideStonesRemarks: string;
+  materialPricePerGram: number;
+  materialCost: number;
+  cadCost: number;
+  mainStoneCost: number;
+  sideStonesCost: number;
+  settingCost: number;
+  laborCost: number;
+  subtotal: number;
+  marginPercentage: number;
+  marginAmount: number;
+  totalPrice: number;
+  images: { src: string }[];
+}
+
+interface SummaryModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  summary: Summary;
+  summaryView: string;
+  setSummaryView: (view: string) => void;
+  finalPrice: string;
+  onFinalPriceChange: (price: string) => void;
+  remarksForFactoryShop: string;
+  setRemarksForFactoryShop: (remarks: string) => void;
+  remarksForCustomer: string;
+  setRemarksForCustomer: (remarks: string) => void;
+  isCopied: boolean;
+  handleCopyToClipboard: () => void;
+  language: string;
+  config: {
+    trelloApiKey: string;
+    trelloApiToken: string;
+    trelloBoardId: string;
+  };
+}
+
 const SummaryModal = ({
     isOpen,
     onClose,
@@ -59,10 +104,10 @@ const SummaryModal = ({
     handleCopyToClipboard,
     language,
     config,
-}) => {
+}: SummaryModalProps) => {
     const modalContentRef = useRef<HTMLDivElement>(null);
-    const [trelloLists, setTrelloLists] = useState([]);
-    const [selectedTrelloListId, setSelectedTrelloListId] = useState('');
+    const [trelloLists, setTrelloLists] = useState<any[]>([]);
+    const [selectedTrelloListId, setSelectedTrelloListId] = useState<string>('');
     const [trelloStatus, setTrelloStatus] = useState({ loading: false, message: '' });
     const [trelloPin, setTrelloPin] = useState('');
     const [trelloPinError, setTrelloPinError] = useState(false);
@@ -75,7 +120,7 @@ const SummaryModal = ({
             const originalStyle = window.getComputedStyle(document.body).overflow;
             document.body.style.overflow = 'hidden';
             
-            const handleKeyDown = (event) => {
+            const handleKeyDown = (event: KeyboardEvent) => {
                 if (event.key === 'Escape') onClose();
             };
             window.addEventListener('keydown', handleKeyDown);
@@ -201,7 +246,7 @@ const SummaryModal = ({
             token: config.trelloApiToken,
         };
         
-        const dataURLtoBlob = (dataurl) => {
+        const dataURLtoBlob = (dataurl: string) => {
             const arr = dataurl.split(',');
             if (arr.length < 2) return null;
             const mimeMatch = arr[0].match(/:(.*?);/);
@@ -229,9 +274,9 @@ const SummaryModal = ({
     
             setTrelloStatus({ loading: true, message: t(language, 'uploadingAttachments') });
     
-            const attachmentsToUpload = [];
+            const attachmentsToUpload: { blob: Blob | null; name: string }[] = [];
             // Images
-            summary.images.forEach((image, index) => {
+            summary.images.forEach((image: { src: string }, index: number) => {
                 const blob = dataURLtoBlob(image.src);
                 if(blob) attachmentsToUpload.push({ blob, name: `reference-${index + 1}.jpeg` });
             });
@@ -254,7 +299,7 @@ const SummaryModal = ({
             attachmentsToUpload.push({ blob: generateShopPdf(updatedSummary, language), name: shopPdfFilename });
             attachmentsToUpload.push({ blob: generateFactoryPdf(updatedSummary, language), name: factoryPdfFilename });
     
-            const uploadPromises = attachmentsToUpload.map(attachment => {
+            const uploadPromises = attachmentsToUpload.filter(attachment => attachment.blob).map(attachment => {
                 const formData = new FormData();
                 formData.append('key', config.trelloApiKey);
                 formData.append('token', config.trelloApiToken);
@@ -411,7 +456,7 @@ const SummaryModal = ({
                                         disabled={trelloStatus.loading || trelloLists.length === 0}
                                     >
                                         {trelloLists.length === 0 && <option>{trelloStatus.loading ? 'Loading...' : (trelloStatus.message || 'No lists found')}</option>}
-                                        {trelloLists.map(list => (
+                                        {trelloLists.map((list: { id: string; name: string }) => (
                                             <option key={list.id} value={list.id}>{list.name}</option>
                                         ))}
                                     </select>
