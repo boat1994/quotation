@@ -5,7 +5,7 @@ export const CORRECT_PIN = import.meta.env.VITE_CORRECT_PIN;
 
 export const defaultMaterialPrices = {
   silver925: 100,
-  gold9k: 1500,
+  gold9k: 1680,
   gold14k: 2300,
   gold18k: 2800,
   pt950: 1890,
@@ -29,7 +29,7 @@ export const diamondShapeKeys = ['round', 'princess', 'emerald', 'oval', 'marqui
 
 export const diamondColors = ['D', 'E', 'F', 'G', 'H', 'I', 'J'];
 
-export const diamondDetailKeys = ['EX', 'VG'];
+export const diamondDetailKeys = ['IDEAL','EX', 'VG'];
 export const diamondClarityKeys = ['VVS', 'VS', 'SI'];
 
 export const diamondConversionTableLimited = [

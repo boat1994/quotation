@@ -13,6 +13,6 @@ export default defineConfig(({ mode }) => {
           '@': path.resolve(__dirname, '.'),
         }
       },
-      base: '/quotation/',
+      base: env.MODE === 'dev' ? '/' : '/quotation/',
     };
 });
