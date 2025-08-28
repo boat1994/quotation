@@ -235,7 +235,7 @@ export const generateCustomerPdf = (summary, lang) => {
 
     let yPos = 50;
     if (summary.customerName) {
-        doc.text(`${t(lang, 'pdfForLabel')}${summary.customerName}`, 20, 48);
+        doc.text(`${t(lang, 'pdfForLabel')}K'${summary.customerName}`, 20, 48);
         yPos = 56;
     }
 
