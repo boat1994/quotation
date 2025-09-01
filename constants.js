@@ -1,5 +1,6 @@
 
 
+
 export const CORRECT_PIN = '151515';
 
 
@@ -72,15 +73,54 @@ export const diamondConversionTableLimited = [
   { "diameter_mm": "3.90", "weight_ct": "0.22" }
 ];
 
-export const conversionFactors = {
-  sterlingSilver: { sterlingSilver: 1.00, gold9k: 1.11, gold14k: 1.31, gold18k: 1.50, gold22ct: 1.73, fineGold: 1.87, platinum: 2.08 },
-  gold9k: { sterlingSilver: 0.90, gold9k: 1.00, gold14k: 1.18, gold18k: 1.36, gold22ct: 1.59, fineGold: 1.72, platinum: 1.88 },
-  gold14k: { sterlingSilver: 0.76, gold9k: 0.85, gold14k: 1.00, gold18k: 1.14, gold22ct: 1.29, fineGold: 1.40, platinum: 1.59 },
-  gold18k: { sterlingSilver: 0.67, gold9k: 0.74, gold14k: 0.88, gold18k: 1.00, gold22ct: 1.15, fineGold: 1.25, platinum: 1.34 },
-  gold22ct: { sterlingSilver: 0.58, gold9k: 0.63, gold14k: 0.78, gold18k: 0.90, gold22ct: 1.00, fineGold: 1.08, platinum: 1.21 },
-  fineGold: { sterlingSilver: 0.53, gold9k: 0.58, gold14k: 0.72, gold18k: 0.83, gold22ct: 0.94, fineGold: 1.00, platinum: 1.11 },
-  platinum: { sterlingSilver: 0.48, gold9k: 0.53, gold14k: 0.63, gold18k: 0.72, gold22ct: 0.83, fineGold: 0.90, platinum: 1.00 }
+// This is the single source of truth for weight conversion factors.
+// All values are ratios of density relative to 18ct Gold, based on the original matrix
+// to maintain pricing consistency.
+const baseRatios = {
+  sterlingSilver: 0.67,
+  gold9ct: 0.74,
+  gold14ct: 0.88,
+  gold18ct: 1.00,
+  gold22ct: 1.15,
+  fineGold: 1.25,
+  platinum: 1.34
 };
+
+// Map app-specific keys (like 'gold9k') to the canonical keys used in baseRatios ('gold9ct').
+// This allows both the main form and the weight converter tool to use the same matrix.
+const keyMap = {
+  silver925: 'sterlingSilver',
+  gold9k: 'gold9ct',
+  gold14k: 'gold14ct',
+  gold18k: 'gold18ct',
+  pt950: 'platinum',
+};
+
+// Combine all possible keys from the app and the converter tool.
+const allMaterialKeys = [...new Set([
+  ...Object.keys(baseRatios),
+  ...Object.keys(keyMap)
+])];
+
+// Programmatically generate a fully reciprocal conversion matrix.
+// This ensures that converting a weight back and forth (e.g., 18k -> 14k -> 18k)
+// results in the original value, eliminating rounding drift.
+export const conversionFactors = {};
+allMaterialKeys.forEach(fromKey => {
+  conversionFactors[fromKey] = {};
+  allMaterialKeys.forEach(toKey => {
+    // Resolve to the canonical key to look up the base ratio.
+    const canonicalFrom = keyMap[fromKey] || fromKey;
+    const canonicalTo = keyMap[toKey] || toKey;
+
+    if (baseRatios[canonicalFrom] && baseRatios[canonicalTo]) {
+      const fromRatio = baseRatios[canonicalFrom];
+      const toRatio = baseRatios[canonicalTo];
+      // The conversion factor is the ratio of the densities (and thus weights for a given volume).
+      conversionFactors[fromKey][toKey] = toRatio / fromRatio;
+    }
+  });
+});
 
 export const getInitialStoneState = () => ({
   cost: '',
