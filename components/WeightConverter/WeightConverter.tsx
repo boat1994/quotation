@@ -1,17 +1,7 @@
 import React, { useState } from 'react';
 import { t } from '../../i18n.js';
+import { conversionFactors } from '../../constants.js';
 import './WeightConverter.css';
-
-// Conversion factor matrix from the spec
-const conversionFactors = {
-  sterlingSilver: { sterlingSilver: 1.00, gold9ct: 1.11, gold14ct: 1.31, gold18ct: 1.50, gold22ct: 1.73, fineGold: 1.87, platinum: 2.08 },
-  gold9ct: { sterlingSilver: 0.90, gold9ct: 1.00, gold14ct: 1.18, gold18ct: 1.36, gold22ct: 1.59, fineGold: 1.72, platinum: 1.88 },
-  gold14ct: { sterlingSilver: 0.76, gold9ct: 0.85, gold14ct: 1.00, gold18ct: 1.14, gold22ct: 1.29, fineGold: 1.40, platinum: 1.59 },
-  gold18ct: { sterlingSilver: 0.67, gold9ct: 0.74, gold14ct: 0.88, gold18ct: 1.00, gold22ct: 1.15, fineGold: 1.25, platinum: 1.34 },
-  gold22ct: { sterlingSilver: 0.58, gold9ct: 0.63, gold14ct: 0.78, gold18ct: 0.90, gold22ct: 1.00, fineGold: 1.08, platinum: 1.21 },
-  fineGold: { sterlingSilver: 0.53, gold9ct: 0.58, gold14ct: 0.72, gold18ct: 0.83, gold22ct: 0.94, fineGold: 1.00, platinum: 1.11 },
-  platinum: { sterlingSilver: 0.48, gold9ct: 0.53, gold14ct: 0.63, gold18ct: 0.72, gold22ct: 0.83, fineGold: 0.90, platinum: 1.00 }
-};
 
 const materialOptions = [
   { key: 'sterlingSilver', labelKey: 'sterlingSilver' },
@@ -45,12 +35,17 @@ const WeightConverter = ({ language }) => {
 
     const factors = conversionFactors[originalMaterial];
     const newResults = Object.keys(factors).map(targetMaterialKey => {
-      const newWeight = weight * factors[targetMaterialKey];
-      return {
-        materialKey: targetMaterialKey,
-        weight: newWeight.toFixed(2)
-      };
-    });
+      // Ensure the target key exists in the material options for display
+      if (materialOptions.some(opt => opt.key === targetMaterialKey)) {
+        const newWeight = weight * factors[targetMaterialKey];
+        return {
+          materialKey: targetMaterialKey,
+          weight: newWeight.toFixed(2)
+        };
+      }
+      return null;
+    }).filter(Boolean); // Filter out nulls for keys not in the converter's display list
+
 
     setResults(newResults);
   };

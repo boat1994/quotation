@@ -317,7 +317,7 @@ export const generateComparisonPdf = (summary, comparisonData, lang) => {
     ]];
 
     const sortedComparisonData = [...comparisonData].sort((a, b) => {
-        const order = { 'gold9k': 1, 'gold14k': 2, 'gold18k': 3 };
+        const order = { 'gold9k': 1, 'gold14k': 2, 'gold18k': 3, 'pt950': 4 };
         return order[a.material] - order[b.material];
     });
 

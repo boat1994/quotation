@@ -230,7 +230,7 @@ function App() {
           language={language}
           setLanguage={setLanguage}
       />
-      {/* <WeightConverter language={language} /> */}
+      <WeightConverter language={language} />
       <div className="logo-container">
         <img src={logoBase64} alt="Bogus Jewelry Logo" className="logo" />
       </div>

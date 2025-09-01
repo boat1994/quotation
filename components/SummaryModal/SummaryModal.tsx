@@ -94,8 +94,8 @@ const SummaryModal = ({
     }, [isOpen, setSummaryView]);
 
     useEffect(() => {
-        if (summary && ['gold9k', 'gold14k', 'gold18k'].includes(summary.material)) {
-            const compareMaterials = ['gold9k', 'gold14k', 'gold18k'];
+        if (summary && ['gold9k', 'gold14k', 'gold18k', 'pt950'].includes(summary.material)) {
+            const compareMaterials = ['gold9k', 'gold14k', 'gold18k', 'pt950'];
             const baseMaterialKey = summary.material;
             const baseGrams = parseFloat(summary.grams) || 0;
 
@@ -425,7 +425,7 @@ const SummaryModal = ({
                                 </thead>
                                 <tbody>
                                     {comparisonData.sort((a, b) => {
-                                        const order = { 'gold9k': 1, 'gold14k': 2, 'gold18k': 3 };
+                                        const order = { 'gold9k': 1, 'gold14k': 2, 'gold18k': 3, 'pt950': 4 };
                                         return order[a.material] - order[b.material];
                                     }).map(item => (
                                         <tr 
@@ -443,9 +443,6 @@ const SummaryModal = ({
                                     ))}
                                 </tbody>
                             </table>
-                            <button type="button" className="download-btn comparison" onClick={handleExportComparisonPdf}>
-                                {t(language, 'exportComparisonPdfBtn')}
-                            </button>
                         </div>
                     )}
                     
