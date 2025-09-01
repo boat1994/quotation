@@ -1,21 +1,14 @@
-
+import React from 'react';
 import { earringSizeKeys } from '../../constants.js';
 import { t } from '../../i18n.js';
 import './SizeInput.css';
 
-interface SizeInputProps {
-  jewelryType: string;
-  size: string;
-  onSizeChange: (size: string) => void;
-  lang: string;
-}
-
-const SizeInput = ({ jewelryType, size, onSizeChange, lang }: SizeInputProps) => {
+const SizeInput = ({ jewelryType, size, onSizeChange, lang }) => {
     if (jewelryType === 'pendant') {
         return null;
     }
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => onSizeChange(e.target.value);
+    const handleInputChange = (e) => onSizeChange(e.target.value);
 
     let inputField;
     const inputId = `sizeInput-${jewelryType}`;

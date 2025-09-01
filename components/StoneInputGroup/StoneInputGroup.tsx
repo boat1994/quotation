@@ -1,4 +1,4 @@
-
+import React from 'react';
 import {
     diamondShapeKeys,
     diamondColors,
@@ -10,30 +10,17 @@ import {
 import { t } from '../../i18n.js';
 import './StoneInputGroup.css';
 
-
-  
-
-interface StoneInputGroupProps {
-  label: string;
-  stone: Stone;
-  onStoneChange: (stone: Stone) => void;
-  idPrefix: string;
-  isSideStone?: boolean;
-  onRemove?: (() => void) | null;
-  lang: string;
-}
-
-const StoneInputGroup = ({ label, stone, onStoneChange, idPrefix, isSideStone = false, onRemove = null, lang }: StoneInputGroupProps) => {
-    const handleInputChange = (field: keyof Stone, value: string) => {
+const StoneInputGroup = ({ label, stone, onStoneChange, idPrefix, isSideStone = false, onRemove = null, lang }) => {
+    const handleInputChange = (field, value) => {
       onStoneChange({ ...stone, [field]: value });
     };
   
-    const handleModeChange = (mode: string) => {
+    const handleModeChange = (mode) => {
       // Reset cost when changing mode to avoid carrying over values
       onStoneChange({ ...getInitialStoneState(), ...stone, calculationMode: mode, cost: '' });
     };
   
-    const handleDiameterModeChange = (field: keyof Stone, value: string) => {
+    const handleDiameterModeChange = (field, value) => {
       const newStone = { ...stone, [field]: value };
       const diameter = field === 'diameter' ? value : newStone.diameter;
       const pricePerCarat = field === 'pricePerCarat' ? value : newStone.pricePerCarat;

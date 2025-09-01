@@ -1,6 +1,7 @@
 
 
 
+
 import { diamondConversionTableLimited, colorableMaterialKeys } from './constants.js';
 import { t } from './i18n.js';
 
@@ -96,6 +97,23 @@ export const getStoneRemarksForCopy = (stone, lang = 'en') => {
     return parts.filter(Boolean).join('\n');
 };
 
+export const getFullMaterialName = (material, materialColor, platingColor, language) => {
+    const isColorable = colorableMaterialKeys.includes(material);
+    if (material === 'silver925') {
+        return `${t(language, material)} (${t(language, platingColor)})`;
+    } else if (isColorable) {
+        const materialTextEn = t('en', material); // e.g. "Gold 14k"
+        const qualityMatch = materialTextEn.match(/\d+k/);
+        const quality = qualityMatch ? qualityMatch[0] : ''; // "14k"
+        
+        const colorTextEn = t('en', materialColor); // e.g. "White Gold"
+
+        return `${quality} ${colorTextEn}`; // "14k White Gold", same for both languages
+    } else {
+        return t(language, material);
+    }
+};
+
 export const calculateCosts = ({
   customerName,
   jewelryType,
@@ -145,20 +163,7 @@ export const calculateCosts = ({
     const totalPrice = subtotal + marginAmount;
 
     const isColorable = colorableMaterialKeys.includes(material);
-    let fullMaterialName;
-    if (material === 'silver925') {
-        fullMaterialName = `${t(language, material)} (${t(language, platingColor)})`;
-    } else if (isColorable) {
-        const materialTextEn = t('en', material); // e.g. "Gold 14k"
-        const qualityMatch = materialTextEn.match(/\d+k/);
-        const quality = qualityMatch ? qualityMatch[0] : ''; // "14k"
-        
-        const colorTextEn = t('en', materialColor); // e.g. "White Gold"
-
-        fullMaterialName = `${quality} ${colorTextEn}`; // "14k White Gold", same for both languages
-    } else {
-        fullMaterialName = t(language, material);
-    }
+    const fullMaterialName = getFullMaterialName(material, materialColor, platingColor, language);
         
     let sizeDetails = '';
     if (size) {

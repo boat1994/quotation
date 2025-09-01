@@ -1,27 +1,11 @@
 
-import { useState, useEffect, useLayoutEffect } from 'react';
+import React, { useState, useEffect, useLayoutEffect } from 'react';
 import { materialKeys } from '../../constants.js';
 import { t } from '../../i18n.js';
 import './PreferencesModal.css';
 
-interface Config {
-  materialPrices: { [key: string]: number };
-  settingCosts: { mainStone: number; sideStone: number };
-  trelloApiKey: string;
-  trelloApiToken: string;
-  trelloBoardId: string;
-}
-
-interface PreferencesModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  currentConfig: Config;
-  onSave: (config: Config) => void;
-  lang: string;
-}
-
-const PreferencesModal = ({ isOpen, onClose, currentConfig, onSave, lang }: PreferencesModalProps) => {
-    const [localConfig, setLocalConfig] = useState<Config>(currentConfig);
+const PreferencesModal = ({ isOpen, onClose, currentConfig, onSave, lang }) => {
+    const [localConfig, setLocalConfig] = useState(currentConfig);
   
     useEffect(() => {
       setLocalConfig(currentConfig);
@@ -29,7 +13,7 @@ const PreferencesModal = ({ isOpen, onClose, currentConfig, onSave, lang }: Pref
   
     useLayoutEffect(() => {
         if (isOpen) {
-            const handleKeyDown = (event: KeyboardEvent) => {
+            const handleKeyDown = (event) => {
                 if (event.key === 'Escape') onClose();
             };
             window.addEventListener('keydown', handleKeyDown);
@@ -37,14 +21,14 @@ const PreferencesModal = ({ isOpen, onClose, currentConfig, onSave, lang }: Pref
         }
     }, [isOpen, onClose]);
   
-    const handleChange = (section: 'materialPrices' | 'settingCosts', key: string, value: string) => {
+    const handleChange = (section, key, value) => {
       setLocalConfig(prev => ({
         ...prev,
         [section]: { ...prev[section], [key]: parseFloat(value) || 0 }
       }));
     };
 
-    const handleTrelloChange = (key: keyof Config, value: string) => {
+    const handleTrelloChange = (key, value) => {
       setLocalConfig(prev => ({ ...prev, [key]: value }));
     };
   

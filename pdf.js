@@ -1,10 +1,10 @@
-
-
 import jsPDF from 'jspdf';
-import { formatCurrency } from './utils.js';
+import autoTable from 'jspdf-autotable';
+import { formatCurrency, getFullMaterialName } from './utils.js';
 import { sarabunBase64 } from './font.js';
 import { t } from './i18n.js';
 import { logoTransparentBase64 } from './logo_base64.js';
+import { CORRECT_PIN } from './constants.js';
 
 
 const addImagesToPdf = (doc, images, lang) => {
@@ -125,203 +125,233 @@ const addTermsAndConditions = (doc, lang, startY) => {
     addTermSection('pdfPaymentTermsTitle', ['pdfPaymentTerm1', 'pdfPaymentTerm2']);
     addTermSection('pdfPaymentMethodTitle', 'pdfPaymentMethodText');
     addTermSection('pdfLeadTimeTitle', 'pdfLeadTimeText');
+    addTermSection('pdfWeightVariationTitle', 'pdfWeightVariationText');
     addTermSection('pdfCancellationTitle', 'pdfCancellationText');
 
     return yPos;
 };
 
-export const generateShopPdf = (summary, lang) => {
-    const doc = new jsPDF({
-    encryption: {
-    userPassword: "151515",
-    ownerPassword: "151515",
-    userPermissions: ["print", "modify", "copy", "annot-forms"] // Define permissions
-  }
-});
+// Common function to initialize a new jsPDF document
+const initializeDoc = (userPassword = null) => {
+    const options = userPassword ? {
+        encryption: {
+            userPassword,
+            ownerPassword: CORRECT_PIN,
+            userPermissions: ["print"]
+        }
+    } : {};
+    const doc = new jsPDF(options);
     doc.addFileToVFS('Sarabun-Regular.ttf', sarabunBase64);
     doc.addFont('Sarabun-Regular.ttf', 'Sarabun', 'normal');
     doc.setFont('Sarabun');
+    return doc;
+};
 
+// Common header for all PDFs
+const addHeader = (doc, lang, title, dateString, customerName) => {
+    doc.setFontSize(20);
+    doc.text(title, 105, 18, { align: 'center' });
+    doc.setFontSize(11);
+    doc.addImage(logoTransparentBase64, 'PNG', 20, 20, 30, 30);
+    doc.text(`${t(lang, 'pdfDateLabel')}${dateString}`, 190, 28, { align: 'right' });
+    if (customerName) {
+        doc.text(`${t(lang, 'pdfForLabel')}${customerName}`, 190, 36, { align: 'right' });
+    }
+    doc.setLineWidth(0.5);
+    doc.line(20, 45, 190, 45);
+};
+
+export const generateShopPdf = (summary, lang) => {
+    const doc = initializeDoc(summary.customerName.replace(/\s/g, '').toLowerCase());
     const dateLocale = lang === 'th' ? 'th-TH' : 'en-US';
     const dateString = new Date().toLocaleDateString(dateLocale, { year: 'numeric', month: 'long', day: 'numeric' });
-
-    // Header
-    doc.setFontSize(20);
-    doc.text(t(lang, 'shopPdfTitle'), 105, 18, { align: 'center' });
-    doc.setFontSize(11);
-    doc.text('Bogus', 20, 28);
-    doc.text(`${t(lang, 'pdfDateLabel')}${dateString}`, 190, 28, { align: 'right' });
-    doc.setLineWidth(0.5);
-    doc.line(20, 34, 190, 34);
     
-    let yPos = 42;
-    if (summary.customerName) {
-        doc.text(`${t(lang, 'pdfForLabel')}K'${summary.customerName}`, 20, 40);
-        yPos = 48;
-    }
-
-    doc.setFontSize(14);
-    doc.text(t(lang, 'pdfProjectCostTitle'), 20, yPos);
-    yPos += 8;
-
-    const lineItem = (label, value, remarks = '') => {
-      doc.setFontSize(11);
-      doc.text(label, 20, yPos);
-      doc.text(value, 190, yPos, { align: 'right' });
-      if (remarks) {
-        yPos += 5;
-        doc.setFontSize(9);
-        const splitRemarks = doc.splitTextToSize(remarks, 168);
-        doc.text(splitRemarks, 22, yPos);
-        yPos += (splitRemarks.length) * 3.5;
-      }
-      yPos += 8;
-    };
-    
-    lineItem(t(lang, 'pdfMaterialPricePerGramLabel'), formatCurrency(summary.materialPricePerGram, lang), summary.fullMaterialName);
-    const materialLabel = `(${summary.grams || 0}${t(lang, 'gramsUnit')}) ${t(lang, 'lossLabel')}`;
-    lineItem(t(lang, 'pdfTotalMaterialCostLabel'), formatCurrency(summary.materialCost, lang), materialLabel);
-
-    lineItem(t(lang, 'pdfCadCostLabel'), formatCurrency(summary.cadCost, lang));
-    lineItem(t(lang, 'pdfMainStoneCostLabel'), formatCurrency(summary.mainStoneCost, lang), summary.mainStoneRemarks);
-    lineItem(t(lang, 'pdfSideStonesCostLabel'), formatCurrency(summary.sideStonesCost, lang), summary.sideStonesRemarks);
-    lineItem(t(lang, 'pdfSettingCostLabel'), formatCurrency(summary.settingCost, lang));
-    lineItem(t(lang, 'pdfLaborCostLabel'), formatCurrency(summary.laborCost, lang));
-    
-    yPos += 1;
-    doc.setLineWidth(0.2);
-    doc.line(20, yPos, 190, yPos);
-    yPos += 6;
-
-    lineItem(t(lang, 'pdfSubtotalLabel'), formatCurrency(summary.subtotal, lang));
-    const marginText = t(lang, 'pdfMarginLabel', { marginPercentage: summary.marginPercentage });
-    lineItem(marginText, formatCurrency(summary.marginAmount, lang));
-    
-    yPos += 4;
-    doc.setLineWidth(0.2);
-    doc.line(20, yPos, 190, yPos);
-    yPos += 10;
+    addHeader(doc, lang, t(lang, 'shopPdfTitle'), dateString, summary.customerName);
 
     doc.setFontSize(16);
-    doc.text(`${t(lang, 'pdfTotalEstCostLabel')}`, 20, yPos);
-    doc.text(formatCurrency(summary.totalPrice, lang), 190, yPos, { align: 'right' });
-    
-    yPos = addRemarksToPdf(doc, summary.remarksForFactoryShop, yPos, lang);
+    doc.text(t(lang, 'pdfProjectCostTitle'), 105, 60, { align: 'center' });
 
+    const body = [
+        [t(lang, 'pdfMaterialPricePerGramLabel'), `${summary.fullMaterialName} @ ${formatCurrency(summary.materialPricePerGram, lang)}/${t(lang, 'gramsUnit')}`],
+        [t(lang, 'pdfTotalMaterialCostLabel'), formatCurrency(summary.materialCost, lang), `(${summary.grams || 0}${t(lang, 'gramsUnit')}) ${t(lang, 'lossLabel')}`],
+        [t(lang, 'pdfCadCostLabel'), formatCurrency(summary.cadCost, lang)],
+        [{ content: t(lang, 'pdfMainStoneLabel'), styles: {fontStyle: 'bold'} }, '', summary.mainStoneRemarks],
+        ['', formatCurrency(summary.mainStoneCost, lang)],
+        [{ content: t(lang, 'pdfSideStoneLabel'), styles: {fontStyle: 'bold'} }, '', summary.sideStonesRemarks],
+        ['', formatCurrency(summary.sideStonesCost, lang)],
+        [t(lang, 'pdfSettingCostLabel'), formatCurrency(summary.settingCost, lang)],
+        [t(lang, 'pdfLaborCostLabel'), formatCurrency(summary.laborCost, lang)],
+        [{ content: t(lang, 'pdfSubtotalLabel'), styles: { fontStyle: 'bold' } }, { content: formatCurrency(summary.subtotal, lang), styles: { fontStyle: 'bold', halign: 'right' } }],
+        [t(lang, 'pdfMarginLabel', { marginPercentage: summary.marginPercentage.toFixed(2) }), { content: formatCurrency(summary.marginAmount, lang), styles: { halign: 'right' } }],
+        [{ content: t(lang, 'pdfTotalEstCostLabel'), styles: { fontStyle: 'bold', fillColor: [220, 220, 220], textColor: [0, 0, 0] } }, { content: formatCurrency(summary.totalPrice, lang), colSpan: 2, styles: { fontStyle: 'bold', halign: 'right', fillColor: [220, 220, 220], textColor: [0, 0, 0] } }]
+    ].filter(row => row.some(cell => (typeof cell === 'object' ? cell.content : cell) ));
+
+    autoTable(doc, {
+        startY: 68,
+        body,
+        theme: 'grid',
+        styles: { font: 'Sarabun', cellPadding: 3, fontSize: 11 },
+        columnStyles: {
+            0: { cellWidth: 70 },
+            1: { cellWidth: 35, halign: 'right' },
+            2: { cellWidth: 'auto', minCellWidth: 65 },
+        },
+        didParseCell: (data) => {
+            if (data.row.raw[2]) {
+                data.cell.styles.halign = 'left';
+            }
+        }
+    });
+
+    let finalY = doc.lastAutoTable.finalY;
+    finalY = addRemarksToPdf(doc, summary.remarksForFactoryShop, finalY, lang);
     addImagesToPdf(doc, summary.images, lang);
     
     return doc.output('blob');
 };
 
 export const generateCustomerPdf = (summary, lang) => {
-    const doc = new jsPDF();
-    doc.addFileToVFS('Sarabun-Regular.ttf', sarabunBase64);
-    doc.addFont('Sarabun-Regular.ttf', 'Sarabun', 'normal');
-    doc.setFont('Sarabun');
-
+    const doc = initializeDoc();
     const dateLocale = lang === 'th' ? 'th-TH' : 'en-US';
     const dateString = new Date().toLocaleDateString(dateLocale, { year: 'numeric', month: 'long', day: 'numeric' });
 
-    // Header
-    const logoSize = 25;
-    doc.addImage(logoTransparentBase64, 'PNG', 20, 12, logoSize, logoSize);
-
-    doc.setFontSize(20);
-    doc.text(t(lang, 'customerPdfTitle'), 105, 25, { align: 'center' });
-    doc.setFontSize(11);
-    doc.text(`${t(lang, 'pdfDateLabel')}${dateString}`, 190, 25, { align: 'right' });
-    doc.setLineWidth(0.5);
-    doc.line(20, 42, 190, 42);
-
-    let yPos = 50;
-    if (summary.customerName) {
-        doc.text(`${t(lang, 'pdfForLabel')}K'${summary.customerName}`, 20, 48);
-        yPos = 56;
-    }
-
-    doc.setFontSize(14);
-    doc.text(t(lang, 'pdfProjectDetailsTitle'), 20, yPos);
-    yPos += 8;
-
-    const specItem = (label, details) => {
-        doc.setFontSize(11);
-        doc.text(label, 20, yPos);
-        const splitDetails = doc.splitTextToSize(details, 140);
-        doc.text(splitDetails, 55, yPos);
-        yPos += (splitDetails.length) * 5 + 3;
-    };
-    
-    if(summary.jewelryType) specItem(t(lang, 'pdfJewelryTypeLabel'), t(lang, summary.jewelryType));
-    if(summary.sizeDetails) specItem(t(lang, 'pdfSizeLabel'), summary.sizeDetails);
-    const materialGrams = summary.showGramsInQuote ? ` (${summary.grams || 0}${t(lang, 'gramsUnit')})` : '';
-    const materialLabel = `${summary.fullMaterialName}${materialGrams}`;
-    specItem(t(lang, 'pdfMaterialLabel'), materialLabel);
-    if(summary.mainStoneRemarks) specItem(t(lang, 'pdfMainStoneLabel'), summary.mainStoneRemarks);
-    if(summary.sideStonesRemarks) specItem(t(lang, 'pdfSideStoneLabel'), summary.sideStonesRemarks);
-
-    yPos += 10;
-    doc.setLineWidth(0.5);
-    doc.line(20, yPos, 190, yPos);
-    yPos += 10;
+    addHeader(doc, lang, t(lang, 'customerPdfTitle'), dateString, summary.customerName);
 
     doc.setFontSize(16);
-    doc.text(`${t(lang, 'pdfTotalEstPriceLabel')}`, 20, yPos);
-    doc.text(formatCurrency(summary.totalPrice, lang), 190, yPos, { align: 'right' });
+    doc.text(t(lang, 'pdfProjectDetailsTitle'), 20, 60);
 
-    yPos = addRemarksToPdf(doc, summary.remarksForCustomer, yPos, lang);
+    const specs = [
+        [t(lang, 'pdfJewelryTypeLabel'), t(lang, summary.jewelryType)],
+        summary.sizeDetails ? [t(lang, 'pdfSizeLabel'), summary.sizeDetails] : null,
+        [t(lang, 'pdfMaterialLabel'), `${summary.fullMaterialName}${summary.showGramsInQuote ? ` (~${summary.grams || 0}${t(lang, 'gramsUnit')})` : ''}`],
+        summary.mainStoneRemarks ? [t(lang, 'pdfMainStoneLabel'), summary.mainStoneRemarks] : null,
+        summary.sideStonesRemarks ? [t(lang, 'pdfSideStoneLabel'), summary.sideStonesRemarks] : null,
+    ].filter(Boolean);
 
-    yPos = addTermsAndConditions(doc, lang, yPos);
-    
+    autoTable(doc, {
+        startY: 68,
+        body: specs,
+        theme: 'plain',
+        styles: { font: 'Sarabun', fontSize: 12 },
+        columnStyles: { 0: { fontStyle: 'bold', cellWidth: 50 } },
+    });
+
+    let finalY = doc.lastAutoTable.finalY + 10;
+    doc.setFontSize(16);
+    doc.setFont('Sarabun', 'bold');
+    doc.text(t(lang, 'pdfTotalEstPriceLabel'), 20, finalY);
+    doc.text(formatCurrency(summary.totalPrice, lang), 190, finalY, { align: 'right' });
+    doc.setFont('Sarabun', 'normal');
+
+    finalY = addRemarksToPdf(doc, summary.remarksForCustomer, finalY, lang);
+    finalY = addTermsAndConditions(doc, lang, finalY);
     addImagesToPdf(doc, summary.images, lang);
+
     return doc.output('blob');
 };
 
 export const generateFactoryPdf = (summary, lang) => {
-    const doc = new jsPDF();
-    doc.addFileToVFS('Sarabun-Regular.ttf', sarabunBase64);
-    doc.addFont('Sarabun-Regular.ttf', 'Sarabun', 'normal');
-    doc.setFont('Sarabun');
-
+    const doc = initializeDoc();
     const dateLocale = lang === 'th' ? 'th-TH' : 'en-US';
     const dateString = new Date().toLocaleDateString(dateLocale, { year: 'numeric', month: 'long', day: 'numeric' });
 
-    // Header
-    doc.setFontSize(20);
-    doc.text(t(lang, 'factoryPdfTitle'), 105, 18, { align: 'center' });
-    doc.setFontSize(11);
-    doc.text('Bogus', 20, 28);
-    doc.text(`${t(lang, 'pdfDateLabel')}${dateString}`, 190, 28, { align: 'right' });
-    doc.setLineWidth(0.5);
-    doc.line(20, 34, 190, 34);
-
-    let yPos = 42;
-    // Customer name intentionally omitted for factory work order.
-
-    doc.setFontSize(14);
-    doc.text(t(lang, 'pdfProjectDetailsTitle'), 20, yPos);
-    yPos += 8;
-
-    const specItem = (label, details) => {
-        if (!details) return;
-        doc.setFontSize(11);
-        doc.text(label, 20, yPos);
-        const splitDetails = doc.splitTextToSize(details, 140);
-        doc.text(splitDetails, 55, yPos);
-        yPos += (splitDetails.length) * 5 + 3;
-    };
+    addHeader(doc, lang, t(lang, 'factoryPdfTitle'), dateString, summary.customerName);
     
-    if(summary.jewelryType) specItem(t(lang, 'pdfJewelryTypeLabel'), t(lang, summary.jewelryType));
-    if(summary.sizeDetails) specItem(t(lang, 'pdfSizeLabel'), summary.sizeDetails);
+    doc.setFontSize(16);
+    doc.text(t(lang, 'pdfProjectDetailsTitle'), 20, 60);
+
+    const specs = [
+        [t(lang, 'pdfJewelryTypeLabel'), t(lang, summary.jewelryType)],
+        summary.sizeDetails ? [t(lang, 'pdfSizeLabel'), summary.sizeDetails] : null,
+        [t(lang, 'pdfMaterialLabel'), `${summary.fullMaterialName} (${summary.grams || 0}${t(lang, 'gramsUnit')})`],
+        summary.mainStoneRemarks ? [t(lang, 'pdfMainStoneLabel'), summary.mainStoneRemarks] : null,
+        summary.sideStonesRemarks ? [t(lang, 'pdfSideStoneLabel'), summary.sideStonesRemarks] : null,
+    ].filter(Boolean);
+
+    autoTable(doc, {
+        startY: 68,
+        body: specs,
+        theme: 'plain',
+        styles: { font: 'Sarabun', fontSize: 12 },
+        columnStyles: { 0: { fontStyle: 'bold', cellWidth: 50 } },
+    });
     
-    // Factory needs weight, so always include it.
-    const materialLabel = `${summary.fullMaterialName} (${summary.grams || 0}${t(lang, 'gramsUnit')})`;
-    specItem(t(lang, 'pdfMaterialLabel'), materialLabel);
-
-    if(summary.mainStoneRemarks) specItem(t(lang, 'pdfMainStoneLabel'), summary.mainStoneRemarks);
-    if(summary.sideStonesRemarks) specItem(t(lang, 'pdfSideStoneLabel'), summary.sideStonesRemarks);
-
-    yPos = addRemarksToPdf(doc, summary.remarksForFactoryShop, yPos, lang);
-
+    let finalY = doc.lastAutoTable.finalY;
+    finalY = addRemarksToPdf(doc, summary.remarksForFactoryShop, finalY, lang);
     addImagesToPdf(doc, summary.images, lang);
+
+    return doc.output('blob');
+};
+
+export const generateComparisonPdf = (summary, comparisonData, lang) => {
+    const doc = initializeDoc();
+    const dateLocale = lang === 'th' ? 'th-TH' : 'en-US';
+    const dateString = new Date().toLocaleDateString(dateLocale, { year: 'numeric', month: 'long', day: 'numeric' });
+
+    addHeader(doc, lang, t(lang, 'comparisonPdfTitle'), dateString, summary.customerName);
+
+    doc.setFontSize(16);
+    doc.text(t(lang, 'pdfProjectDetailsTitle'), 20, 60);
+
+    const specs = [
+        [t(lang, 'pdfJewelryTypeLabel'), t(lang, summary.jewelryType)],
+        summary.sizeDetails ? [t(lang, 'pdfSizeLabel'), summary.sizeDetails] : null,
+        summary.mainStoneRemarks ? [t(lang, 'pdfMainStoneLabel'), summary.mainStoneRemarks] : null,
+        summary.sideStonesRemarks ? [t(lang, 'pdfSideStoneLabel'), summary.sideStonesRemarks] : null,
+    ].filter(Boolean);
+
+    autoTable(doc, {
+        startY: 68,
+        body: specs,
+        theme: 'plain',
+        styles: { font: 'Sarabun', fontSize: 12 },
+        columnStyles: { 0: { fontStyle: 'bold', cellWidth: 50 } },
+    });
+    
+    let finalY = doc.lastAutoTable.finalY + 10;
+
+    const comparisonHead = [[
+        t(lang, 'comparisonMaterial'),
+        `${t(lang, 'comparisonWeight')} (${t(lang, 'gramsUnit')})`,
+        t(lang, 'comparisonPrice')
+    ]];
+
+    const sortedComparisonData = [...comparisonData].sort((a, b) => {
+        const order = { 'gold9k': 1, 'gold14k': 2, 'gold18k': 3 };
+        return order[a.material] - order[b.material];
+    });
+
+    const comparisonBody = sortedComparisonData.map(item => [
+        item.name,
+        item.weight,
+        formatCurrency(item.price, lang)
+    ]);
+    
+    autoTable(doc, {
+        startY: finalY,
+        head: comparisonHead,
+        body: comparisonBody,
+        theme: 'grid',
+        styles: { font: 'Sarabun', cellPadding: 3, fontSize: 11 },
+        headStyles: { fontStyle: 'bold', fillColor: [220, 220, 220], textColor: [0, 0, 0] },
+        columnStyles: {
+            0: { cellWidth: 'auto' },
+            1: { cellWidth: 50, halign: 'right' },
+            2: { cellWidth: 50, halign: 'right' },
+        },
+        didParseCell: (data) => {
+            const originalMaterialName = getFullMaterialName(summary.material, summary.materialColor, '', lang);
+            if (data.section === 'body' && data.row.raw[0] === originalMaterialName) {
+                data.cell.styles.fontStyle = 'bold';
+            }
+        },
+    });
+
+    finalY = doc.lastAutoTable.finalY;
+
+    finalY = addRemarksToPdf(doc, summary.remarksForCustomer, finalY, lang);
+    finalY = addTermsAndConditions(doc, lang, finalY);
+    addImagesToPdf(doc, summary.images, lang);
+
     return doc.output('blob');
 };

@@ -48,6 +48,7 @@ export const translations = {
     backBtnLabel: 'Back to calculator',
     saveBtn: 'Save',
     cancelBtn: 'Cancel',
+    confirmBtn: 'Confirm',
 
     // Radio Buttons
     showGramsRadio: 'Show weight',
@@ -123,6 +124,7 @@ export const translations = {
     shopPdfFilename: '[FOR SHOP] project details for k. {customerName}-{date}.pdf',
     customerPdfFilename: '[For Customer]  Quotation for k. {customerName}-{date}.pdf',
     factoryPdfFilename: '[Work order] {jewelryType} {material} for k. {customerName} {date}.pdf',
+    comparisonPdfFilename: '[Comparison] Quotation for k. {customerName}-{date}.pdf',
     
     pdfTermsTitle: 'Terms and Conditions',
     pdfPriceValidityTitle: 'Price Validity',
@@ -134,6 +136,8 @@ export const translations = {
     pdfPaymentMethodText: 'Account Name: Bogus Jewelry\nBank: K-Bank\nAccount No: 123-4-56789-0',
     pdfLeadTimeTitle: 'Production Lead Time',
     pdfLeadTimeText: 'Approximately 14-21 business days after receiving the deposit and design confirmation.',
+    pdfWeightVariationTitle: 'Jewelry Weight',
+    pdfWeightVariationText: "The actual weight of the piece may vary slightly depending on the customer's size and the nature of handmade production.",
     pdfCancellationTitle: 'Cancellation/Return Policy',
     pdfCancellationText: 'As this is a made-to-order item, it cannot be canceled, changed, or returned after production has been confirmed.',
 
@@ -152,6 +156,35 @@ export const translations = {
     copy_cancellation_header_v2: 'A quick note:',
     copy_cancellation_info_v2: 'As this is a made-to-order item, we reserve the right not to accept cancellations or returns after production has been confirmed.',
     copy_closing_v2: 'If you have any additional questions, please feel free to ask me anytime. 😊 Thank you for letting us be a part of creating this special piece of jewelry.',
+
+    // Weight Converter
+    weightConverterTitle: 'Karat Weight Converter',
+    originalMaterialLabel: 'Original Material',
+    originalWeightLabel: 'Original Weight (g)',
+    calculateBtnConverter: 'Calculate',
+    resultsHeader: 'Results',
+    materialHeader: 'Material',
+    calculatedWeightHeader: 'Calculated Weight (g)',
+    weightError: 'Please enter a positive number for the weight.',
+    
+    // Weight Converter Materials
+    sterlingSilver: 'Sterling Silver',
+    gold9ct: '9ct Gold',
+    gold14ct: '14ct Gold',
+    gold18ct: '18ct Gold',
+    gold22ct: '22ct Gold',
+    fineGold: 'Fine Gold (24K)',
+    platinum: 'Platinum',
+
+    // Material Conversion
+    materialConversionTitle: 'Material & Price Comparison',
+    exportComparisonPdfBtn: 'Export Comparison PDF',
+    comparisonPdfTitle: 'Price Comparison Quotation',
+    comparisonMaterial: 'Material',
+    comparisonWeight: 'Est. Weight',
+    comparisonPrice: 'Est. Price',
+    confirmMaterialChangeTitle: 'Confirm Material Change',
+    confirmMaterialChangeMessage: 'This will update the main form with {materialName} at an estimated weight of {weight}g and close this summary. Do you want to proceed?',
 
 
     // Units
@@ -262,6 +295,7 @@ export const translations = {
     backBtnLabel: 'กลับไปที่เครื่องคำนวณ',
     saveBtn: 'บันทึก',
     cancelBtn: 'ยกเลิก',
+    confirmBtn: 'ยืนยัน',
 
     // Radio Buttons
     showGramsRadio: 'แสดงน้ำหนัก',
@@ -337,6 +371,7 @@ export const translations = {
     shopPdfFilename: '[สำหรับร้าน] รายละเอียดโปรเจค คุณ {customerName}-{date}.pdf',
     customerPdfFilename: '[สำหรับลูกค้า]  ใบเสนอราคา คุณ {customerName}-{date}.pdf',
     factoryPdfFilename: '[ใบสั่งผลิต] {jewelryType} {material} คุณ {customerName}-{date}.pdf',
+    comparisonPdfFilename: '[เปรียบเทียบ] ใบเสนอราคา คุณ {customerName}-{date}.pdf',
     
     pdfTermsTitle: 'เงื่อนไขและข้อตกลง',
     pdfPriceValidityTitle: 'การยืนราคา',
@@ -347,44 +382,76 @@ export const translations = {
     pdfPaymentMethodTitle: 'ช่องทางการชำระเงิน',
     pdfPaymentMethodText: 'ชื่อบัญชี: นาย ดลวัฒน์ แสนสุริวงค์\nธนาคาร: กสิกรไทย\nเลขที่บัญชี: 142-3-96854-7',
     pdfLeadTimeTitle: 'ระยะเวลาการผลิต',
-    pdfLeadTimeText: 'ใช้ระยะเวลาในการผลิตประมาณ 14-21 วันทำการ หลังจากได้รับเงินมัดจำและยืนยันแบบการผลิตแล้ว',
-    pdfCancellationTitle: 'นโยบายการยกเลิก/คืนสินค้า',
-    pdfCancellationText: 'เนื่องจากเป็นสินค้าสั่งทำพิเศษ (Made-to-Order) จึงไม่สามารถยกเลิก, เปลี่ยนแปลง, หรือคืนสินค้าได้ หลังจากยืนยันการผลิตแล้ว',
-
+    pdfLeadTimeText: 'ประมาณ 14-21 วันทำการ หลังจากได้รับเงินมัดจำและยืนยันแบบ',
+    pdfWeightVariationTitle: 'น้ำหนักตัวเรือน',
+    pdfWeightVariationText: 'น้ำหนักตัวเรือนจริงสามารถขึ้นลงได้ อันเกิดจากไซส์ของลูกค้าแต่ละท่านและเนื่องจากสินค้าเป็นการผลิตด้วยมือชิ้นต่อชิ้น',
+    pdfCancellationTitle: 'การยกเลิก/คืนสินค้า',
+    pdfCancellationText: 'เนื่องจากเป็นสินค้าสั่งทำพิเศษ จึงไม่สามารถยกเลิก, เปลี่ยนแปลง, หรือคืนสินค้าได้หลังจากยืนยันการผลิตแล้ว',
+    
     // Copy for chat v2
-    copy_greeting_v2: 'ผมขออนุญาตส่งสรุปรายละเอียดสำหรับ{jewelryType}วงพิเศษนะครับ',
+    copy_greeting_v2: 'ขออนุญาตส่งสรุปรายละเอียดงาน {jewelryType} ชิ้นพิเศษของคุณลูกค้านะครับ',
     copy_details_header_v2: 'รายละเอียดชิ้นงาน:',
     copy_size_line_v2: '- ขนาด: {sizeDetails}',
-    copy_main_stone_line_v2: '- เพชรเม็ดหลัก: {mainStoneRemarks}',
-    copy_side_stones_line_v2: '- เพชรข้าง: {sideStonesRemarks}',
+    copy_main_stone_line_v2: '- เพชรยอด: {mainStoneRemarks}',
+    copy_side_stones_line_v2: '- เพชรบ่า: {sideStonesRemarks}',
     copy_body_line_v2: '- ตัวเรือน: {material}',
-    copy_total_line_v2: 'ยอดรวมสุทธิ: {finalPrice} บาท',
-    copy_deposit_info_v2: 'หากคุณ{customerName}คอนเฟิร์มสั่งผลิต\n🙏🏻ชำระมัดจำ 50% = {depositAmount} บาท🙏🏻\nเพื่อเริ่มงานได้เลยครับ',
+    copy_total_line_v2: 'ยอดรวมทั้งหมด: {finalPrice} บาท',
+    copy_deposit_info_v2: 'หากคุณ {customerName} ยืนยันการสั่งผลิต\nรบกวนมัดจำ 50% = {depositAmount} บาท🙏🏻\nเพื่อเริ่มงานครับ',
     copy_payment_header_v2: 'ช่องทางการชำระเงิน:',
-    copy_payment_details_v2: 'ชื่อบัญชี: นาย ดลวัฒน์ แสนสุริวงค์\nธนาคาร: กสิกรไทย\nเลขที่: 142-3-96854-7',
-    copy_post_payment_info_v2: 'หลังจากผมได้รับยอดมัดจำแล้ว จะรีบเริ่มกระบวนการผลิตทันที ซึ่งจะใช้เวลาประมาณ 14-21 วันทำการ เพื่อสร้างสรรค์ผลงานชิ้นนี้อย่างสุดฝีมือเลยครับ',
-    copy_cancellation_header_v2: 'รบกวนนิดนึงนะครับ:',
-    copy_cancellation_info_v2: 'เนื่องจากเป็นสินค้าสั่งทำพิเศษ (Made-to-Order) ทางเราขอสงวนสิทธิ์ไม่รับยกเลิกหรือคืนสินค้าหลังจากที่ยืนยันการผลิตแล้วนะครับ',
-    copy_closing_v2: 'หากมีคำถามเพิ่มเติมตรงไหน สอบถามผมได้ตลอดเลยนะครับ 😊 ขอบคุณที่ให้เราได้เป็นส่วนหนึ่งในการสร้างสรรค์เครื่องประดับชิ้นพิเศษครับ',
+    copy_payment_details_v2: 'ชื่อบัญชี: นาย ดลวัฒน์ แสนสุริวงค์\nธนาคาร: กสิกรไทย\nเลขที่บัญชี: 142-3-96854-7',
+    copy_post_payment_info_v2: 'หลังจากได้รับยอดมัดจำแล้ว ทางเราจะเริ่มกระบวนการผลิตทันที ซึ่งจะใช้เวลาประมาณ 14-21 วันทำการในการรังสรรค์ผลงานชิ้นเอกนี้ด้วยความใส่ใจสูงสุดครับ',
+    copy_cancellation_header_v2: 'หมายเหตุเล็กน้อย:',
+    copy_cancellation_info_v2: 'เนื่องจากเป็นสินค้าสั่งทำพิเศษ ทางเราขอสงวนสิทธิ์ไม่รับยกเลิกหรือคืนสินค้าหลังจากยืนยันการผลิตแล้วนะครับ',
+    copy_closing_v2: 'หากมีคำถามเพิ่มเติม สอบถามได้ตลอดเลยนะครับ 😊 ขอบคุณที่ให้เราเป็นส่วนหนึ่งในการสร้างสรรค์เครื่องประดับชิ้นพิเศษนี้ครับ',
 
+    // Weight Converter
+    weightConverterTitle: 'คำนวณน้ำหนักโลหะ',
+    originalMaterialLabel: 'วัสดุต้นทาง',
+    originalWeightLabel: 'น้ำหนักต้นทาง (กรัม)',
+    calculateBtnConverter: 'คำนวณ',
+    resultsHeader: 'ผลลัพธ์',
+    materialHeader: 'วัสดุ (Material)',
+    calculatedWeightHeader: 'น้ำหนักที่คำนวณได้ (กรัม)',
+    weightError: 'กรุณาป้อนน้ำหนักเป็นตัวเลขบวก',
+
+    // Weight Converter Materials
+    sterlingSilver: 'เงินแท้ (Sterling Silver)',
+    gold9ct: 'ทอง 9ct',
+    gold14ct: 'ทอง 14ct',
+    gold18ct: 'ทอง 18ct',
+    gold22ct: 'ทอง 22ct',
+    fineGold: 'ทองคำแท้ (24K)',
+    platinum: 'แพลทินัม (Platinum)',
+
+    // Material Conversion
+    materialConversionTitle: 'เปรียบเทียบราคาและวัสดุ',
+    exportComparisonPdfBtn: 'Export PDF เปรียบเทียบ',
+    comparisonPdfTitle: 'ใบเสนอราคาเปรียบเทียบ',
+    comparisonMaterial: 'วัสดุ',
+    comparisonWeight: 'น้ำหนัก (โดยประมาณ)',
+    comparisonPrice: 'ราคา (โดยประมาณ)',
+    confirmMaterialChangeTitle: 'ยืนยันการเปลี่ยนวัสดุ',
+    confirmMaterialChangeMessage: 'การดำเนินการนี้จะอัปเดตข้อมูลในฟอร์มหลักเป็น {materialName} ที่น้ำหนักประมาณ {weight}g และปิดหน้าต่างนี้ คุณต้องการดำเนินการต่อหรือไม่?',
+    
     // Units
-    gramsUnit: 'ก',
+    gramsUnit: 'กรัม',
     mmUnit: 'มม.',
     cmUnit: 'ซม.',
-    pcsUnit: 'Pcs',
-    
+    pcsUnit: 'เม็ด',
+    carat: 'กะรัต',
+
     // Jewelry Types
     ring: 'แหวน',
-    bracelet: 'สร้อยข้อมือ/กำไลข้อมือ',
+    bracelet: 'สร้อยข้อมือ',
     necklace: 'สร้อยคอ',
     earring: 'ต่างหู',
     pendant: 'จี้',
-
+    
     // Earring Sizes
-    s: 'S (3-5มม.)',
-    m: 'M (6-10มม.)',
-    l: 'L (11-15มม.)',
-    xl: 'XL (16-20มม.)',
+    s: 'S (3-5มม)',
+    m: 'M (6-10มม)',
+    l: 'L (11-15มม)',
+    xl: 'XL (16-20มม)',
 
     // Materials
     silver925: 'เงิน 925',
@@ -395,31 +462,30 @@ export const translations = {
     yellowGold: 'ทองคำ',
     whiteGold: 'ทองคำขาว',
     roseGold: 'โรสโกลด์',
-    rhodium: 'ชุบโรเดียม',
+    rhodium: 'โรเดียม',
     yellowGoldPlating: 'ชุบทอง',
     roseGoldPlating: 'ชุบโรสโกลด์',
-    
+
     // Diamond Shapes
-    round: 'เพชรทรงกลม',
-    princess: 'เพชรทรงปริ้นเซส',
-    emerald: 'เพชรทรงเอมเมอรัลด์',
-    oval: 'เพชรทรงไข่',
-    marquise: 'เพชรทรงมาร์คีส์',
-    pear: 'เพชรทรงหยดน้ำ',
-    cushion: 'เพชรทรงคุชชั่น',
+    round: 'เพชรกลม',
+    princess: 'Princess Cut',
+    emerald: 'Emerald Cut',
+    oval: 'Oval Cut',
+    marquise: 'Marquise Cut',
+    pear: 'Pear Cut',
+    cushion: 'Cushion Cut',
     
     // Diamond Details (Cut, Clarity, Polish)
-    EX: 'EX',
-    VG: 'VG',
+    EX: 'Excellent',
+    VG: 'Very Good',
     VVS: 'VVS',
     VS: 'VS',
     SI: 'SI',
-    
+
     // Stone remarks parts
     shapeLabel: 'รูปทรง',
     waitingForDetails: 'รอรายละเอียดเพชร...',
-    carat: 'กะรัต',
-    color: 'สี',
+    color: 'น้ำ',
     cut: 'เจียระไน',
     clarity: 'ความสะอาด',
     polish: 'การขัดเงา',
@@ -431,11 +497,10 @@ export const translations = {
   }
 };
 
-export const t = (lang, key, replacements = {}) => {
-  let translation = translations[lang]?.[key] || translations['en']?.[key] || key;
-  Object.keys(replacements).forEach(rKey => {
-      const regex = new RegExp(`{${rKey}}`, 'g');
-      translation = translation.replace(regex, replacements[rKey]);
-  });
-  return translation;
+export const t = (lang, key, options = {}) => {
+  let text = translations[lang]?.[key] || translations.en[key] || key;
+  for (const optionKey in options) {
+    text = text.replace(`{${optionKey}}`, options[optionKey]);
+  }
+  return text;
 };

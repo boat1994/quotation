@@ -1,5 +1,3 @@
-
-
 /* Modal styles */
 .modal-overlay {
     position: fixed;
@@ -374,4 +372,71 @@ input[type="password"].error {
   20%, 80% { transform: translateX(2px); }
   30%, 50%, 70% { transform: translateX(-4px); }
   40%, 60% { transform: translateX(4px); }
+}
+
+/* Material Comparison Section */
+.material-comparison-section {
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.material-comparison-section h4 {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+    color: var(--primary-color);
+}
+
+.comparison-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1.5rem;
+}
+
+.comparison-table th,
+.comparison-table td {
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-color);
+    text-align: left;
+}
+
+.comparison-table th {
+    background-color: var(--secondary-color);
+    font-weight: 500;
+}
+
+.comparison-table td:nth-child(2),
+.comparison-table td:nth-child(3) {
+    text-align: right;
+}
+
+.comparison-table tbody tr {
+    transition: background-color 0.2s ease;
+    cursor: pointer;
+}
+
+.comparison-table tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
+.comparison-table tbody tr.highlight:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.comparison-table .highlight {
+    background-color: rgba(255, 255, 255, 0.1);
+    font-weight: bold;
+}
+
+.download-btn.comparison {
+    background-color: #6f42c1; /* A purple shade */
+    border-color: #6f42c1;
+    color: white;
+    width: 100%;
+}
+
+.download-btn.comparison:hover {
+    background-color: #5a349b;
+    border-color: #5a349b;
 }

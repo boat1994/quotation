@@ -1,11 +1,11 @@
 
 
-export const CORRECT_PIN = import.meta.env.VITE_CORRECT_PIN;
+export const CORRECT_PIN = '151515';
 
 
 export const defaultMaterialPrices = {
   silver925: 100,
-  gold9k: 1680,
+  gold9k: 1500,
   gold14k: 2300,
   gold18k: 2800,
   pt950: 1890,
@@ -29,7 +29,7 @@ export const diamondShapeKeys = ['round', 'princess', 'emerald', 'oval', 'marqui
 
 export const diamondColors = ['D', 'E', 'F', 'G', 'H', 'I', 'J'];
 
-export const diamondDetailKeys = ['IDEAL','EX', 'VG'];
+export const diamondDetailKeys = ['EX', 'VG'];
 export const diamondClarityKeys = ['VVS', 'VS', 'SI'];
 
 export const diamondConversionTableLimited = [
@@ -72,6 +72,15 @@ export const diamondConversionTableLimited = [
   { "diameter_mm": "3.90", "weight_ct": "0.22" }
 ];
 
+export const conversionFactors = {
+  sterlingSilver: { sterlingSilver: 1.00, gold9k: 1.11, gold14k: 1.31, gold18k: 1.50, gold22ct: 1.73, fineGold: 1.87, platinum: 2.08 },
+  gold9k: { sterlingSilver: 0.90, gold9k: 1.00, gold14k: 1.18, gold18k: 1.36, gold22ct: 1.59, fineGold: 1.72, platinum: 1.88 },
+  gold14k: { sterlingSilver: 0.76, gold9k: 0.85, gold14k: 1.00, gold18k: 1.14, gold22ct: 1.29, fineGold: 1.40, platinum: 1.59 },
+  gold18k: { sterlingSilver: 0.67, gold9k: 0.74, gold14k: 0.88, gold18k: 1.00, gold22ct: 1.15, fineGold: 1.25, platinum: 1.34 },
+  gold22ct: { sterlingSilver: 0.58, gold9k: 0.63, gold14k: 0.78, gold18k: 0.90, gold22ct: 1.00, fineGold: 1.08, platinum: 1.21 },
+  fineGold: { sterlingSilver: 0.53, gold9k: 0.58, gold14k: 0.72, gold18k: 0.83, gold22ct: 0.94, fineGold: 1.00, platinum: 1.11 },
+  platinum: { sterlingSilver: 0.48, gold9k: 0.53, gold14k: 0.63, gold18k: 0.72, gold22ct: 0.83, fineGold: 0.90, platinum: 1.00 }
+};
 
 export const getInitialStoneState = () => ({
   cost: '',

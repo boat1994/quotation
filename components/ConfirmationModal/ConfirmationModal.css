@@ -1,0 +1,26 @@
+.confirmation-modal-overlay {
+    z-index: 1100; /* Ensure it's above the summary modal */
+}
+
+.confirmation-modal-content {
+    max-width: 450px;
+}
+
+.confirmation-modal-content h2 {
+    font-size: 1.25rem;
+}
+
+.confirmation-modal-content p {
+    margin-bottom: 2rem;
+    line-height: 1.6;
+    color: #c0c0c0;
+}
+
+.confirmation-modal-content .modal-actions .confirm-btn {
+    background-color: var(--primary-color);
+    color: var(--button-text);
+}
+
+.confirmation-modal-content .modal-actions .confirm-btn:hover {
+    background-color: #e0e0e0;
+}

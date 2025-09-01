@@ -1,13 +1,11 @@
-
-
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { formatCurrency } from '../../utils.js';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { formatCurrency, getFullMaterialName } from '../../utils.js';
 import { t } from '../../i18n.js';
-import { generateShopPdf, generateCustomerPdf, generateFactoryPdf } from '../../pdf.js';
-import { CORRECT_PIN } from '../../constants.js';
+import { generateShopPdf, generateCustomerPdf, generateFactoryPdf, generateComparisonPdf } from '../../pdf.js';
+import { CORRECT_PIN, conversionFactors } from '../../constants.js';
 import './SummaryModal.css';
 
-const SummaryItem = ({ label, value, remarks = '', lang }: { label: string, value: number, remarks?: string, lang: string }) => (
+const SummaryItem = ({ label, value, remarks = '', lang }) => (
     <div className="summary-item">
       <div>
         <span>{label}</span>
@@ -17,14 +15,14 @@ const SummaryItem = ({ label, value, remarks = '', lang }: { label: string, valu
     </div>
 );
   
-const SpecItem = ({label, value}: {label: string, value: string}) => (
+const SpecItem = ({label, value}) => (
     <div className="customer-spec-item">
       <span className="spec-label">{label}</span>
       <span className="spec-value" style={{whiteSpace: 'pre-wrap'}}>{value}</span>
     </div>
 );
 
-const downloadBlob = (blob: Blob, filename: string) => {
+const downloadBlob = (blob, filename) => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
@@ -43,51 +41,6 @@ const getFormattedDate = () => {
     return `${dd}-${mm}-${yy}`;
 };
 
-interface Summary {
-  customerName: string;
-  jewelryType: string;
-  sizeDetails: string;
-  fullMaterialName: string;
-  showGramsInQuote: boolean;
-  grams: number;
-  mainStoneRemarks: string;
-  sideStonesRemarks: string;
-  materialPricePerGram: number;
-  materialCost: number;
-  cadCost: number;
-  mainStoneCost: number;
-  sideStonesCost: number;
-  settingCost: number;
-  laborCost: number;
-  subtotal: number;
-  marginPercentage: number;
-  marginAmount: number;
-  totalPrice: number;
-  images: { src: string }[];
-}
-
-interface SummaryModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  summary: Summary;
-  summaryView: string;
-  setSummaryView: (view: string) => void;
-  finalPrice: string;
-  onFinalPriceChange: (price: string) => void;
-  remarksForFactoryShop: string;
-  setRemarksForFactoryShop: (remarks: string) => void;
-  remarksForCustomer: string;
-  setRemarksForCustomer: (remarks: string) => void;
-  isCopied: boolean;
-  handleCopyToClipboard: () => void;
-  language: string;
-  config: {
-    trelloApiKey: string;
-    trelloApiToken: string;
-    trelloBoardId: string;
-  };
-}
-
 const SummaryModal = ({
     isOpen,
     onClose,
@@ -104,13 +57,15 @@ const SummaryModal = ({
     handleCopyToClipboard,
     language,
     config,
-}: SummaryModalProps) => {
+    onMaterialChangeRequest,
+}) => {
     const modalContentRef = useRef<HTMLDivElement>(null);
-    const [trelloLists, setTrelloLists] = useState<any[]>([]);
-    const [selectedTrelloListId, setSelectedTrelloListId] = useState<string>('');
+    const [trelloLists, setTrelloLists] = useState([]);
+    const [selectedTrelloListId, setSelectedTrelloListId] = useState('');
     const [trelloStatus, setTrelloStatus] = useState({ loading: false, message: '' });
     const [trelloPin, setTrelloPin] = useState('');
     const [trelloPinError, setTrelloPinError] = useState(false);
+    const [comparisonData, setComparisonData] = useState([]);
 
     useLayoutEffect(() => {
         if (isOpen) {
@@ -120,7 +75,7 @@ const SummaryModal = ({
             const originalStyle = window.getComputedStyle(document.body).overflow;
             document.body.style.overflow = 'hidden';
             
-            const handleKeyDown = (event: KeyboardEvent) => {
+            const handleKeyDown = (event) => {
                 if (event.key === 'Escape') onClose();
             };
             window.addEventListener('keydown', handleKeyDown);
@@ -137,6 +92,42 @@ const SummaryModal = ({
             setSummaryView('shop');
         }
     }, [isOpen, setSummaryView]);
+
+    useEffect(() => {
+        if (summary && ['gold9k', 'gold14k', 'gold18k'].includes(summary.material)) {
+            const compareMaterials = ['gold9k', 'gold14k', 'gold18k'];
+            const baseMaterialKey = summary.material;
+            const baseGrams = parseFloat(summary.grams) || 0;
+
+            const data = compareMaterials.map(targetMaterialKey => {
+                const conversionFactor = conversionFactors[baseMaterialKey]?.[targetMaterialKey] || 1;
+                const newWeight = baseGrams * conversionFactor;
+
+                const materialPrices = config.materialPrices;
+                const materialBasePrice = materialPrices[targetMaterialKey] || 0;
+                const newMaterialCost = newWeight * materialBasePrice * 1.15;
+                
+                const oldSubtotalWithoutMaterial = summary.subtotal - summary.materialCost;
+                const newSubtotal = oldSubtotalWithoutMaterial + newMaterialCost;
+                
+                const marginPercentage = summary.marginPercentage;
+                const newMarginAmount = newSubtotal * (marginPercentage / 100);
+                const newTotalPrice = newSubtotal + newMarginAmount;
+
+                const fullMaterialName = getFullMaterialName(targetMaterialKey, summary.materialColor, '', language);
+
+                return {
+                    material: targetMaterialKey,
+                    name: fullMaterialName,
+                    weight: newWeight.toFixed(2),
+                    price: newTotalPrice
+                };
+            });
+            setComparisonData(data);
+        } else {
+            setComparisonData([]);
+        }
+    }, [summary, language, config.materialPrices]);
 
     useEffect(() => {
         if (isOpen && summaryView === 'shop' && config.trelloApiKey && config.trelloApiToken && config.trelloBoardId) {
@@ -196,6 +187,16 @@ const SummaryModal = ({
         });
         downloadBlob(blob, filename);
     };
+
+    const handleExportComparisonPdf = () => {
+        if (!summary || comparisonData.length === 0) return;
+        const updatedSummary = { ...summary, remarksForCustomer };
+        const blob = generateComparisonPdf(updatedSummary, comparisonData, language);
+        const date = getFormattedDate();
+        const customerName = summary.customerName || 'customer';
+        const filename = t(language, 'comparisonPdfFilename', { customerName, date });
+        downloadBlob(blob, filename);
+    };
     
     const executeCreateTrelloCard = async () => {
         if (!summary || !selectedTrelloListId) return;
@@ -246,7 +247,7 @@ const SummaryModal = ({
             token: config.trelloApiToken,
         };
         
-        const dataURLtoBlob = (dataurl: string) => {
+        const dataURLtoBlob = (dataurl) => {
             const arr = dataurl.split(',');
             if (arr.length < 2) return null;
             const mimeMatch = arr[0].match(/:(.*?);/);
@@ -274,9 +275,9 @@ const SummaryModal = ({
     
             setTrelloStatus({ loading: true, message: t(language, 'uploadingAttachments') });
     
-            const attachmentsToUpload: { blob: Blob | null; name: string }[] = [];
+            const attachmentsToUpload = [];
             // Images
-            summary.images.forEach((image: { src: string }, index: number) => {
+            summary.images.forEach((image, index) => {
                 const blob = dataURLtoBlob(image.src);
                 if(blob) attachmentsToUpload.push({ blob, name: `reference-${index + 1}.jpeg` });
             });
@@ -299,7 +300,7 @@ const SummaryModal = ({
             attachmentsToUpload.push({ blob: generateShopPdf(updatedSummary, language), name: shopPdfFilename });
             attachmentsToUpload.push({ blob: generateFactoryPdf(updatedSummary, language), name: factoryPdfFilename });
     
-            const uploadPromises = attachmentsToUpload.filter(attachment => attachment.blob).map(attachment => {
+            const uploadPromises = attachmentsToUpload.map(attachment => {
                 const formData = new FormData();
                 formData.append('key', config.trelloApiKey);
                 formData.append('token', config.trelloApiToken);
@@ -389,7 +390,7 @@ const SummaryModal = ({
                             <div className="customer-spec-list">
                               {summary.jewelryType && <SpecItem label={t(language, 'jewelryTypeLabel')} value={t(language, summary.jewelryType)} />}
                               {summary.sizeDetails && <SpecItem label={t(language, 'sizeLabel')} value={summary.sizeDetails} />}
-                              <SpecItem label={t(language, 'materialLabel')} value={`${summary.fullMaterialName}${summary.showGramsInQuote ? ` (${summary.grams || 0}${t(language, 'gramsUnit')})` : ''}`} />
+                              <SpecItem label={t(language, 'materialLabel')} value={`${summary.fullMaterialName}${summary.showGramsInQuote ? ` (~${summary.grams || 0}${t(language, 'gramsUnit')})` : ''}`} />
                               {summary.mainStoneRemarks && <SpecItem label={t(language, 'mainStoneLabel')} value={summary.mainStoneRemarks} />}
                               {summary.sideStonesRemarks && <SpecItem label={t(language, 'sideStoneLabel')} value={summary.sideStonesRemarks} />}
                             </div>
@@ -410,6 +411,43 @@ const SummaryModal = ({
                             <textarea id="remarksCustomer" rows={3} value={remarksForCustomer} onChange={e => setRemarksForCustomer(e.target.value)} />
                         </div>
                     </div>
+
+                    {summaryView === 'customer' && comparisonData.length > 0 && (
+                        <div className="material-comparison-section">
+                            <h4>{t(language, 'materialConversionTitle')}</h4>
+                            <table className="comparison-table">
+                                <thead>
+                                    <tr>
+                                        <th>{t(language, 'comparisonMaterial')}</th>
+                                        <th>{`${t(language, 'comparisonWeight')} (${t(language, 'gramsUnit')})`}</th>
+                                        <th>{t(language, 'comparisonPrice')}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {comparisonData.sort((a, b) => {
+                                        const order = { 'gold9k': 1, 'gold14k': 2, 'gold18k': 3 };
+                                        return order[a.material] - order[b.material];
+                                    }).map(item => (
+                                        <tr 
+                                            key={item.material} 
+                                            className={item.material === summary.material ? 'highlight' : ''}
+                                            onClick={() => onMaterialChangeRequest(item.material, item.weight, item.name)}
+                                            tabIndex={0}
+                                            role="button"
+                                            onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onMaterialChangeRequest(item.material, item.weight, item.name)}
+                                        >
+                                            <td>{item.name}</td>
+                                            <td>{item.weight}</td>
+                                            <td>{formatCurrency(item.price, language)}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                            <button type="button" className="download-btn comparison" onClick={handleExportComparisonPdf}>
+                                {t(language, 'exportComparisonPdfBtn')}
+                            </button>
+                        </div>
+                    )}
                     
                     <div className="download-grid">
                         {summaryView === 'shop' ? (
@@ -424,52 +462,41 @@ const SummaryModal = ({
                                     {isCopied ? (
                                         <><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg><span>{t(language, 'copiedLabel')}</span></>
                                     ) : (
-                                        <><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg><span>{t(language, 'copyForChat')}</span></>
+                                        <><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg><span>{t(language, 'copyForChat')}</span></>
                                     )}
                                 </button>
                             </>
                         )}
                     </div>
+
                     {summaryView === 'shop' && trelloConfigured && (
                         <div className="trello-section">
                             <h4>{t(language, 'trelloIntegration')}</h4>
                             <div className="trello-controls">
                                 <div className="form-group">
-                                    <label htmlFor="trelloPin">PIN</label>
+                                    <label htmlFor="trelloList">{t(language, 'trelloList')}</label>
+                                    <select id="trelloList" value={selectedTrelloListId} onChange={(e) => setSelectedTrelloListId(e.target.value)} disabled={trelloStatus.loading || trelloLists.length === 0}>
+                                        {trelloLists.map(list => <option key={list.id} value={list.id}>{list.name}</option>)}
+                                    </select>
+                                </div>
+                                <div className="form-group">
+                                    <label htmlFor="trelloPin">{t(language, 'enterPinPrompt')}</label>
                                     <input
                                         id="trelloPin"
                                         type="password"
-                                        inputMode="numeric"
                                         value={trelloPin}
-                                        onChange={e => setTrelloPin(e.target.value)}
+                                        onChange={(e) => setTrelloPin(e.target.value)}
                                         className={trelloPinError ? 'error' : ''}
-                                        maxLength={6}
+                                        disabled={trelloStatus.loading}
+                                        maxLength={CORRECT_PIN.length}
+                                        autoComplete="off"
                                     />
-                                    {trelloPinError && <span className="trello-pin-error">{t(language, 'pinIncorrect')}</span>}
-                                </div>
-                                <div className="form-group">
-                                    <label htmlFor="trelloList">{t(language, 'trelloList')}</label>
-                                    <select 
-                                        id="trelloList"
-                                        value={selectedTrelloListId} 
-                                        onChange={e => setSelectedTrelloListId(e.target.value)}
-                                        disabled={trelloStatus.loading || trelloLists.length === 0}
-                                    >
-                                        {trelloLists.length === 0 && <option>{trelloStatus.loading ? 'Loading...' : (trelloStatus.message || 'No lists found')}</option>}
-                                        {trelloLists.map((list: { id: string; name: string }) => (
-                                            <option key={list.id} value={list.id}>{list.name}</option>
-                                        ))}
-                                    </select>
                                 </div>
                             </div>
-                            <button 
-                                type="button" 
-                                className="download-btn trello" 
-                                onClick={handleAttemptCreateTrelloCard} 
-                                disabled={trelloStatus.loading || !selectedTrelloListId}
-                            >
-                                {trelloStatus.loading ? trelloStatus.message : (trelloStatus.message && trelloStatus.message !== t(language, 'trelloErrorFetching') ? trelloStatus.message : t(language, 'createTrelloCard'))}
+                            <button className="download-btn trello" onClick={handleAttemptCreateTrelloCard} disabled={trelloStatus.loading || !selectedTrelloListId || trelloPin.length !== CORRECT_PIN.length}>
+                                {t(language, 'createTrelloCard')}
                             </button>
+                            {trelloStatus.message && <p className="trello-status-message">{trelloStatus.message}</p>}
                         </div>
                     )}
                 </div>

@@ -1,5 +1,6 @@
 
 
+
 .container {
   background: var(--container-bg);
   padding: 1.5rem;
@@ -265,4 +266,10 @@ button:active {
 .image-description-input {
     padding: 0.8rem 1rem;
     font-size: 1rem;
+}
+
+.weight-converter-details + .logo-container {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px dashed var(--border-color);
 }
