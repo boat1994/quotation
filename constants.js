@@ -1,7 +1,8 @@
 
 
 
-export const CORRECT_PIN = '151515';
+
+export const DEFAULT_PIN = import.meta.env.VITE_DEFAULT_PIN ;
 
 
 export const defaultMaterialPrices = {

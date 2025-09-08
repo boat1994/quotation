@@ -2,7 +2,7 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { formatCurrency, getFullMaterialName } from '../../utils.js';
 import { t } from '../../i18n.js';
 import { generateShopPdf, generateCustomerPdf, generateFactoryPdf, generateComparisonPdf } from '../../pdf.js';
-import { CORRECT_PIN, conversionFactors } from '../../constants.js';
+import { DEFAULT_PIN, conversionFactors } from '../../constants.js';
 import './SummaryModal.css';
 
 const SummaryItem = ({ label, value, remarks = '', lang }) => (
@@ -324,7 +324,7 @@ const SummaryModal = ({
 
     const handleAttemptCreateTrelloCard = () => {
         if (trelloStatus.loading) return;
-        if (trelloPin === CORRECT_PIN) {
+        if (trelloPin === DEFAULT_PIN) {
             setTrelloPinError(false);
             setTrelloPin(''); // Reset PIN on success
             executeCreateTrelloCard();
@@ -485,12 +485,12 @@ const SummaryModal = ({
                                         onChange={(e) => setTrelloPin(e.target.value)}
                                         className={trelloPinError ? 'error' : ''}
                                         disabled={trelloStatus.loading}
-                                        maxLength={CORRECT_PIN.length}
+                                        maxLength={DEFAULT_PIN.length}
                                         autoComplete="off"
                                     />
                                 </div>
                             </div>
-                            <button className="download-btn trello" onClick={handleAttemptCreateTrelloCard} disabled={trelloStatus.loading || !selectedTrelloListId || trelloPin.length !== CORRECT_PIN.length}>
+                            <button className="download-btn trello" onClick={handleAttemptCreateTrelloCard} disabled={trelloStatus.loading || !selectedTrelloListId || trelloPin.length !== DEFAULT_PIN.length}>
                                 {t(language, 'createTrelloCard')}
                             </button>
                             {trelloStatus.message && <p className="trello-status-message">{trelloStatus.message}</p>}

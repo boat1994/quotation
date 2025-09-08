@@ -4,7 +4,7 @@ import { formatCurrency } from './utils.js';
 import { sarabunBase64 } from './font.js';
 import { t } from './i18n.js';
 import { logoTransparentBase64 } from './logo_base64.js';
-import { CORRECT_PIN } from './constants.js';
+import { DEFAULT_PIN } from './constants.js';
 
 
 const addImagesToPdf = (doc, images, lang) => {
@@ -134,8 +134,8 @@ const addTermsAndConditions = (doc, lang, startY) => {
 export const generateShopPdf = (summary, lang) => {
     const doc = new jsPDF({
     encryption: {
-    userPassword: CORRECT_PIN,
-    ownerPassword: CORRECT_PIN,
+    userPassword: DEFAULT_PIN,
+    ownerPassword: DEFAULT_PIN,
     userPermissions: ["print", "modify", "copy", "annot-forms"]
   }
 });

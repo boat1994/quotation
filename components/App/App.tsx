@@ -10,7 +10,7 @@ import {
   colorableMaterialKeys,
   materialColorKeys,
   platingColorKeys,
-  CORRECT_PIN,
+  DEFAULT_PIN,
 } from '../../constants.js';
 import { calculateCosts, formatCurrency, getFullMaterialName } from '../../utils.js';
 import { t } from '../../i18n.js';
@@ -57,12 +57,14 @@ function App() {
   const [isCopied, setIsCopied] = useState(false);
   const [config, setConfig] = useState(() => {
     const savedConfig = localStorage.getItem('jewelryPricingConfig');
-    return savedConfig ? JSON.parse(savedConfig) : {
-      materialPrices: defaultMaterialPrices,
-      settingCosts: defaultSettingCosts,
-      trelloApiKey: '',
-      trelloApiToken: '',
-      trelloBoardId: '',
+    const parsedConfig = savedConfig ? JSON.parse(savedConfig) : {};
+    return {
+      materialPrices: { ...defaultMaterialPrices, ...(parsedConfig.materialPrices || {}) },
+      settingCosts: { ...defaultSettingCosts, ...(parsedConfig.settingCosts || {}) },
+      trelloApiKey: parsedConfig.trelloApiKey || '',
+      trelloApiToken: parsedConfig.trelloApiToken || '',
+      trelloBoardId: parsedConfig.trelloBoardId || '',
+      pin: parsedConfig.pin || DEFAULT_PIN,
     };
   });
   const [isUnlocked, setIsUnlocked] = useState(false);
@@ -84,11 +86,11 @@ function App() {
   }, [config]);
 
   const handlePinKeyPress = (key) => {
-    if (pinInput.length < CORRECT_PIN.length) {
+    if (pinInput.length < config.pin.length) {
       const newPin = pinInput + key;
       setPinInput(newPin);
-      if (newPin.length === CORRECT_PIN.length) {
-        if (newPin === CORRECT_PIN) {
+      if (newPin.length === config.pin.length) {
+        if (newPin === config.pin) {
           setIsUnlocked(true);
         } else {
           setPinError(true);
@@ -113,7 +115,22 @@ function App() {
         reader.onload = (event) => {
           const img = new Image();
           img.onload = () => {
-            setImages(prev => [...prev, { src: img.src, width: img.width, height: img.height, description: '' }]);
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+              canvas.width = img.width;
+              canvas.height = img.height;
+              // Draw a white background to handle transparent PNGs
+              ctx.fillStyle = '#FFFFFF';
+              ctx.fillRect(0, 0, canvas.width, canvas.height);
+              ctx.drawImage(img, 0, 0);
+              // Convert to JPEG format which is reliably supported by jsPDF
+              const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
+              setImages(prev => [...prev, { src: dataUrl, width: img.width, height: img.height, description: '' }]);
+            } else {
+              // Fallback for safety, though it's unlikely getContext would fail
+              setImages(prev => [...prev, { src: img.src, width: img.width, height: img.height, description: '' }]);
+            }
           };
           img.src = event.target.result as string;
         };
@@ -152,6 +169,17 @@ function App() {
     setSummaryData(costs);
     setFinalPrice(costs.totalPrice.toFixed(2));
     setIsModalOpen(true);
+  };
+
+  const handleFinalPriceChange = (newPriceStr: string) => {
+    setFinalPrice(newPriceStr);
+    const newPrice = parseFloat(newPriceStr);
+    if (summaryData && !isNaN(newPrice) && summaryData.subtotal > 0) {
+        const newMarginValue = ((newPrice - summaryData.subtotal) / summaryData.subtotal) * 100;
+        setMargin(newMarginValue.toFixed(2));
+        const newMarginAmount = newPrice - summaryData.subtotal;
+        setSummaryData(currentSummary => currentSummary ? { ...currentSummary, marginPercentage: newMarginValue, marginAmount: newMarginAmount, totalPrice: newPrice } : null);
+    }
   };
 
   const handleCopyToClipboard = () => {
@@ -217,7 +245,7 @@ function App() {
               language={language}
               pinInput={pinInput}
               pinError={pinError}
-              correctPinLength={CORRECT_PIN.length}
+              correctPinLength={config.pin.length}
               onKeyPress={handlePinKeyPress}
               onDelete={handlePinDelete}
            />;
@@ -369,7 +397,7 @@ function App() {
         summaryView={summaryView}
         setSummaryView={setSummaryView}
         finalPrice={finalPrice}
-        onFinalPriceChange={setFinalPrice}
+        onFinalPriceChange={handleFinalPriceChange}
         remarksForFactoryShop={remarksForFactoryShop}
         setRemarksForFactoryShop={setRemarksForFactoryShop}
         remarksForCustomer={remarksForCustomer}
